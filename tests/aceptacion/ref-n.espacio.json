@@ -1,0 +1,381 @@
+{
+  "formato": "espacios3d",
+  "version": 2,
+  "nombre": "Casa N",
+  "plantas": [
+    {
+      "id": "pb",
+      "nombre": "Planta baja",
+      "nivel": 0,
+      "grosorExterior": 20,
+      "estancias": [
+        {
+          "id": "salon",
+          "nombre": "Salón",
+          "contorno": [
+            [
+              0,
+              0
+            ],
+            [
+              500,
+              0
+            ],
+            [
+              500,
+              480
+            ],
+            [
+              0,
+              480
+            ]
+          ],
+          "altura": 250,
+          "huecos": [
+            {
+              "id": "v-salon",
+              "tipo": "ventana",
+              "muro": 0,
+              "desde": 150,
+              "ancho": 180,
+              "alto": 120,
+              "antepecho": 90
+            },
+            {
+              "id": "entrada",
+              "tipo": "puerta",
+              "muro": 3,
+              "desde": 190,
+              "ancho": 90,
+              "alto": 205,
+              "antepecho": 0,
+              "abre": "dentro",
+              "bisagra": "inicio"
+            },
+            {
+              "id": "p-salon-dist",
+              "tipo": "puerta",
+              "muro": 1,
+              "desde": 20,
+              "ancho": 80,
+              "alto": 205,
+              "antepecho": 0,
+              "abre": "dentro",
+              "bisagra": "inicio"
+            }
+          ]
+        },
+        {
+          "id": "distribuidor",
+          "nombre": "Distribuidor",
+          "contorno": [
+            [
+              510,
+              0
+            ],
+            [
+              760,
+              0
+            ],
+            [
+              760,
+              480
+            ],
+            [
+              510,
+              480
+            ]
+          ],
+          "altura": 250,
+          "huecos": []
+        },
+        {
+          "id": "cocina",
+          "nombre": "Cocina",
+          "contorno": [
+            [
+              770,
+              0
+            ],
+            [
+              1070,
+              0
+            ],
+            [
+              1070,
+              280
+            ],
+            [
+              770,
+              280
+            ]
+          ],
+          "altura": 250,
+          "huecos": [
+            {
+              "id": "v-cocina",
+              "tipo": "ventana",
+              "muro": 0,
+              "desde": 100,
+              "ancho": 120,
+              "alto": 120,
+              "antepecho": 90
+            },
+            {
+              "id": "p-cocina",
+              "tipo": "puerta",
+              "muro": 3,
+              "desde": 100,
+              "ancho": 80,
+              "alto": 205,
+              "antepecho": 0,
+              "abre": "dentro",
+              "bisagra": "inicio"
+            }
+          ]
+        },
+        {
+          "id": "aseo",
+          "nombre": "Aseo",
+          "contorno": [
+            [
+              770,
+              290
+            ],
+            [
+              1070,
+              290
+            ],
+            [
+              1070,
+              480
+            ],
+            [
+              770,
+              480
+            ]
+          ],
+          "altura": 250,
+          "huecos": [
+            {
+              "id": "p-aseo",
+              "tipo": "puerta",
+              "muro": 3,
+              "desde": 40,
+              "ancho": 70,
+              "alto": 205,
+              "antepecho": 0,
+              "abre": "dentro",
+              "bisagra": "inicio"
+            },
+            {
+              "id": "v-aseo",
+              "tipo": "ventana",
+              "muro": 2,
+              "desde": 100,
+              "ancho": 60,
+              "alto": 120,
+              "antepecho": 90
+            }
+          ]
+        }
+      ],
+      "muebles": [],
+      "escaleras": [
+        {
+          "id": "escalera",
+          "forma": "recta",
+          "ancho": 90,
+          "x": 680,
+          "y": 65,
+          "giro": 0,
+          "hasta": "p1",
+          "peldanos": 15,
+          "largo": 350
+        }
+      ]
+    },
+    {
+      "id": "p1",
+      "nombre": "Planta alta",
+      "nivel": 280,
+      "grosorExterior": 20,
+      "estancias": [
+        {
+          "id": "dormitorio",
+          "nombre": "Dormitorio",
+          "contorno": [
+            [
+              0,
+              0
+            ],
+            [
+              500,
+              0
+            ],
+            [
+              500,
+              480
+            ],
+            [
+              0,
+              480
+            ]
+          ],
+          "altura": 250,
+          "huecos": [
+            {
+              "id": "v-dormitorio",
+              "tipo": "ventana",
+              "muro": 0,
+              "desde": 150,
+              "ancho": 160,
+              "alto": 120,
+              "antepecho": 90
+            },
+            {
+              "id": "p-dormitorio",
+              "tipo": "puerta",
+              "muro": 1,
+              "desde": 20,
+              "ancho": 80,
+              "alto": 205,
+              "antepecho": 0,
+              "abre": "dentro",
+              "bisagra": "inicio"
+            }
+          ],
+          "elementos": [
+            {
+              "id": "armario",
+              "tipo": "armario",
+              "forma": "adosado",
+              "muro": 2,
+              "desde": 60,
+              "ancho": 220,
+              "fondo": 60,
+              "elevacion": 0
+            }
+          ]
+        },
+        {
+          "id": "distribuidor-alto",
+          "nombre": "Distribuidor",
+          "contorno": [
+            [
+              510,
+              0
+            ],
+            [
+              760,
+              0
+            ],
+            [
+              760,
+              480
+            ],
+            [
+              510,
+              480
+            ]
+          ],
+          "altura": 250,
+          "huecos": []
+        },
+        {
+          "id": "dormitorio2",
+          "nombre": "Dormitorio 2",
+          "contorno": [
+            [
+              770,
+              0
+            ],
+            [
+              1070,
+              0
+            ],
+            [
+              1070,
+              280
+            ],
+            [
+              770,
+              280
+            ]
+          ],
+          "altura": 250,
+          "huecos": [
+            {
+              "id": "v-dormitorio2",
+              "tipo": "ventana",
+              "muro": 0,
+              "desde": 100,
+              "ancho": 120,
+              "alto": 120,
+              "antepecho": 90
+            },
+            {
+              "id": "p-dormitorio2",
+              "tipo": "puerta",
+              "muro": 3,
+              "desde": 100,
+              "ancho": 80,
+              "alto": 205,
+              "antepecho": 0,
+              "abre": "dentro",
+              "bisagra": "inicio"
+            }
+          ]
+        },
+        {
+          "id": "bano",
+          "nombre": "Baño",
+          "contorno": [
+            [
+              770,
+              290
+            ],
+            [
+              1070,
+              290
+            ],
+            [
+              1070,
+              480
+            ],
+            [
+              770,
+              480
+            ]
+          ],
+          "altura": 250,
+          "huecos": [
+            {
+              "id": "p-bano",
+              "tipo": "puerta",
+              "muro": 3,
+              "desde": 40,
+              "ancho": 70,
+              "alto": 205,
+              "antepecho": 0,
+              "abre": "dentro",
+              "bisagra": "inicio"
+            },
+            {
+              "id": "v-bano",
+              "tipo": "ventana",
+              "muro": 2,
+              "desde": 100,
+              "ancho": 60,
+              "alto": 120,
+              "antepecho": 90
+            }
+          ]
+        }
+      ],
+      "muebles": []
+    }
+  ],
+  "distribuciones": [],
+  "notas": ""
+}

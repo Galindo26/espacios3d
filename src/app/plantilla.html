@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="generator" content="Espacios 3D @@VERSION@@">
+<title>Espacios 3D</title>
+<!--
+Espacios 3D @@VERSION@@ — herramienta local para modelar espacios y reorganizar muebles.
+Funciona sin conexión: todo el código está en este archivo.
+Incluye three.js (licencia MIT), IBM Plex Sans (SIL Open Font License 1.1) y las librerías de
+geometría polygon-clipping y splaytree (MIT), robust-predicates (Unlicense) y earcut (ISC).
+
+Licencia de three.js:
+@@LICENCIA_THREE@@
+
+Licencias de las librerías de geometría:
+@@LICENCIAS_TERCEROS@@
+-->
+<style>
+/*@@FUENTES@@*/
+/*@@CSS@@*/
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="barra">
+    <div class="marca" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22"><path d="M3 9.5 12 4l9 5.5v9L12 23l-9-4.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 9.5 12 15l9-5.5M12 15v8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+    </div>
+    <label class="nombre-espacio">
+      <span class="sr">Nombre del espacio</span>
+      <input id="nombre-espacio" type="text" maxlength="80" autocomplete="off" spellcheck="false">
+    </label>
+    <div class="grupo" role="group" aria-label="Archivo">
+      <button type="button" class="boton" id="b-nuevo" title="Empezar un espacio nuevo">Nuevo</button>
+      <button type="button" class="boton" id="b-abrir" title="Abrir un archivo .espacio.json (Ctrl+O)">Abrir</button>
+      <button type="button" class="boton" id="b-guardar" title="Guardar (Ctrl+S)">Guardar</button>
+      <button type="button" class="boton" id="b-guardar-como" title="Guardar en otro archivo">Guardar como…</button>
+      <button type="button" class="boton" id="b-carpeta" title="Trabajar en una carpeta: sus espacios y sus planos de fondo" hidden>Carpeta…</button>
+      <button type="button" class="boton acento" id="b-continuar" hidden></button>
+    </div>
+    <div class="grupo" role="group" aria-label="Historial">
+      <button type="button" class="boton icono" id="b-deshacer" title="Deshacer (Ctrl+Z)" aria-label="Deshacer"></button>
+      <button type="button" class="boton icono" id="b-rehacer" title="Rehacer (Ctrl+Y)" aria-label="Rehacer"></button>
+    </div>
+    <div class="grupo vistas" role="radiogroup" aria-label="Vista">
+      <button type="button" class="segmento" id="v-plano" role="radio" aria-checked="true" title="Vista en planta (V)">Plano</button>
+      <button type="button" class="segmento" id="v-3d" role="radio" aria-checked="false" title="Vista 3D (V)">3D</button>
+    </div>
+    <div class="herramientas" role="group" aria-label="Herramientas de la vista">
+      <button type="button" class="boton" id="b-casa" aria-pressed="false" title="Ver todas las plantas apiladas en 3D; las de encima de la que editas, en transparente" hidden>Casa entera</button>
+      <button type="button" class="boton" id="b-recorrer" aria-pressed="false" title="Andar por dentro en primera persona (P)">Recorrer</button>
+      <button type="button" class="boton" id="b-medir" aria-pressed="false" title="Medir entre dos puntos (M)">Medir</button>
+    </div>
+    <button type="button" class="boton icono" id="b-encuadrar" title="Encuadrar la estancia (F)" aria-label="Encuadrar la estancia"></button>
+    <button type="button" class="boton icono" id="b-ayuda" title="Atajos de teclado (?)" aria-label="Atajos de teclado"></button>
+    <div class="moviles">
+      <button type="button" class="boton" id="b-panel-izq" aria-controls="panel-izq" aria-expanded="false">Estancia y muebles</button>
+      <button type="button" class="boton" id="b-panel-der" aria-controls="panel-der" aria-expanded="false">Selección</button>
+    </div>
+  </header>
+
+  <aside class="panel izq" id="panel-izq" aria-label="Estancia y muebles">
+    <section class="seccion" aria-labelledby="t-planta">
+      <h2 id="t-planta">Planta</h2>
+      <ul class="chips" id="lista-plantas" aria-label="Plantas: elige cuál ver y editar"></ul>
+      <div class="acciones">
+        <button type="button" class="boton" id="b-planta-mas" title="Añadir una planta (copiando la huella de esta)">Añadir</button>
+        <button type="button" class="boton" id="b-planta-editar" title="Cambiar el nombre y el nivel del suelo de esta planta">Nombre y nivel…</button>
+        <button type="button" class="boton" id="b-planta-quitar" title="Quitar esta planta con todo lo suyo">Quitar</button>
+      </div>
+    </section>
+    <section class="seccion" aria-labelledby="t-estancia">
+      <h2 id="t-estancia">Estancia</h2>
+      <ul class="chips" id="lista-estancias" aria-label="Estancias de la planta: elige cuál editar"></ul>
+      <div class="fila-estancia">
+        <label class="campo"><span>Nombre</span><span class="entrada"><input id="e-nombre" type="text" maxlength="60" autocomplete="off"></span></label>
+        <div class="acciones">
+          <button type="button" class="boton" id="b-estancia-mas">Añadir estancia</button>
+          <button type="button" class="boton" id="b-estancia-quitar">Quitar</button>
+          <button type="button" class="boton" id="b-mover-pared" title="Mover una pared; si da a otra estancia, el tabique se mueve entero">Mover pared…</button>
+        </div>
+      </div>
+      <div class="campos tres">
+        <label class="campo" id="campo-ancho"><span>Ancho</span><span class="entrada"><input id="e-ancho" type="number" inputmode="decimal" min="1" step="1"><i>cm</i></span></label>
+        <label class="campo" id="campo-largo"><span>Largo</span><span class="entrada"><input id="e-largo" type="number" inputmode="decimal" min="1" step="1"><i>cm</i></span></label>
+        <label class="campo"><span>Alto</span><span class="entrada"><input id="e-alto" type="number" inputmode="decimal" min="1" step="1"><i>cm</i></span></label>
+      </div>
+      <p class="ayuda" id="ayuda-rect">Medidas interiores, de pared a pared.</p>
+      <p class="ayuda" id="estancia-libre" hidden>Estancia con forma libre: cambia sus paredes una a una o arrastra las esquinas.</p>
+      <details class="paredes" id="paredes">
+        <summary>Paredes una a una <span class="contador" id="n-paredes"></span></summary>
+        <p class="ayuda">Empieza por la pared de arriba y sigue en el sentido de las agujas del reloj. Giro: 90 en una esquina normal; −90 si la pared siguiente vuelve hacia dentro (estancias en L).</p>
+        <table class="tabla-paredes">
+          <thead><tr><th scope="col">Pared</th><th scope="col">Longitud (cm)</th><th scope="col">Giro (°)</th><th scope="col"><span class="sr">Quitar</span></th></tr></thead>
+          <tbody id="tabla-paredes"></tbody>
+        </table>
+        <p class="ayuda" id="descuadre" aria-live="polite"></p>
+        <div class="acciones">
+          <button type="button" class="boton" id="b-pared-mas">Añadir pared</button>
+          <button type="button" class="boton" id="b-paredes-descartar">Descartar</button>
+          <button type="button" class="boton acento" id="b-paredes-aplicar">Aplicar paredes</button>
+        </div>
+        <label class="campo grosor"><span>Grosor de los muros</span><span class="entrada"><input id="e-grosor" type="number" inputmode="decimal" min="0" step="1"><i>cm</i></span></label>
+      </details>
+      <label class="casilla"><input id="editar-esquinas" type="checkbox"> <span>Editar esquinas en el plano</span></label>
+      <p class="ayuda" id="ayuda-esquinas" hidden>Arrastra una esquina para moverla (se alinea con sus vecinas; Mayús lo evita). Doble clic en una pared añade una esquina; Supr quita la seleccionada.</p>
+      <label class="casilla"><input id="e-giro" type="checkbox"> <span>Comprobar el círculo de giro de 150 cm (silla de ruedas)</span></label>
+      <div class="campos dos acabados">
+        <label class="campo"><span>Suelo</span><span class="entrada"><select id="e-suelo">
+          <option value="liso">Liso</option><option value="parquet">Parquet</option><option value="baldosa">Baldosa</option><option value="moqueta">Moqueta</option>
+        </select></span></label>
+        <label class="campo"><span>Color del suelo</span><span class="entrada color"><input id="e-color-suelo" type="color"></span></label>
+        <label class="campo"><span>Color de las paredes</span><span class="entrada color"><input id="e-paredes" type="color"></span></label>
+        <div class="campo"><span>&nbsp;</span><button type="button" class="boton" id="b-acabados-quitar" title="Volver al suelo liso y a las paredes sin pintar">Sin acabados</button></div>
+      </div>
+      <div class="fotos">
+        <div class="fotos-cabecera"><span>Fotos de la estancia</span><button type="button" class="boton" id="b-foto-estancia" title="Copiar una foto a fotos/ junto al espacio y asociarla a esta estancia">Añadir foto…</button></div>
+        <ul class="miniaturas" id="fotos-estancia" aria-label="Fotos de la estancia"></ul>
+      </div>
+      <p class="error" id="e-error" role="alert" hidden></p>
+    </section>
+    <section class="seccion" aria-labelledby="t-huecos">
+      <h2 id="t-huecos">Puertas y ventanas <span class="contador" id="contador-huecos"></span></h2>
+      <div class="acciones">
+        <button type="button" class="boton" data-hueco="puerta">Añadir puerta</button>
+        <button type="button" class="boton" data-hueco="ventana">Ventana</button>
+        <button type="button" class="boton" data-hueco="paso">Paso</button>
+      </div>
+      <ul class="lista" id="lista-huecos"></ul>
+      <p class="ayuda" id="ayuda-huecos">En el plano, arrastra una puerta o ventana para moverla por su pared.</p>
+      <form id="ficha-hueco" hidden autocomplete="off">
+        <div class="campos dos">
+          <label class="campo"><span>Pared</span><span class="entrada"><select id="h-muro"></select></span></label>
+          <label class="campo"><span>Desde la esquina</span><span class="entrada"><input id="h-desde" type="number" inputmode="decimal" min="0" step="1"><i>cm</i></span></label>
+        </div>
+        <div class="campos tres">
+          <label class="campo"><span>Ancho</span><span class="entrada"><input id="h-ancho" type="number" inputmode="decimal" min="1" step="1"><i>cm</i></span></label>
+          <label class="campo"><span>Alto</span><span class="entrada"><input id="h-alto" type="number" inputmode="decimal" min="1" step="1"><i>cm</i></span></label>
+          <label class="campo" id="campo-antepecho"><span>Antepecho</span><span class="entrada"><input id="h-antepecho" type="number" inputmode="decimal" min="0" step="1"><i>cm</i></span></label>
+        </div>
+        <div class="campos dos" id="campos-puerta">
+          <label class="campo"><span>Abre</span><span class="entrada"><select id="h-abre"><option value="dentro">Hacia dentro</option><option value="fuera">Hacia fuera</option><option value="corredera">Corredera</option></select></span></label>
+          <label class="campo"><span>Bisagra</span><span class="entrada"><select id="h-bisagra"><option value="inicio">Al principio</option><option value="fin">Al final</option></select></span></label>
+        </div>
+        <p class="error" id="h-error" role="alert" hidden></p>
+        <div class="acciones"><button type="button" class="boton peligro" id="h-quitar">Quitar</button></div>
+      </form>
+    </section>
+    <section class="seccion" aria-labelledby="t-obra">
+      <h2 id="t-obra">Obra <span class="contador" id="contador-obra"></span></h2>
+      <div class="acciones">
+        <button type="button" class="boton" data-obra="columna">Columna</button>
+        <button type="button" class="boton" data-obra="pilar">Pilar</button>
+        <button type="button" class="boton" data-obra="radiador">Radiador</button>
+        <button type="button" class="boton" data-obra="enchufe">Enchufe</button>
+        <button type="button" class="boton" data-obra="viga">Viga</button>
+        <button type="button" class="boton" data-obra="escalon">Escalón</button>
+        <button type="button" class="boton" data-obra="buhardilla">Techo inclinado</button>
+        <button type="button" class="boton" data-obra="escalera" title="Escalera que sube a la planta de encima">Escalera</button>
+      </div>
+      <ul class="lista" id="lista-obra"></ul>
+      <form id="ficha-obra" hidden autocomplete="off">
+        <div class="campos dos" id="campos-obra"></div>
+        <div class="acciones"><button type="button" class="boton peligro" id="obra-quitar">Quitar</button></div>
+      </form>
+      <p class="ayuda">Lo que no se mueve: se dibuja como la pared y los muebles no pueden chocar con ello. Elige uno para cambiar sus medidas.</p>
+    </section>
+    <section class="seccion" aria-labelledby="t-fondo">
+      <h2 id="t-fondo">Plano de fondo</h2>
+      <p class="ayuda" id="fondo-ayuda">Pon debajo un plano o una foto para calcar las paredes. Se guarda junto al archivo, en la carpeta de trabajo.</p>
+      <div class="acciones">
+        <button type="button" class="boton" id="b-fondo-poner">Poner plano…</button>
+        <button type="button" class="boton" id="b-fondo-calibrar" hidden>Calibrar</button>
+        <button type="button" class="boton" id="b-dibujar">Dibujar estancia</button>
+      </div>
+      <label class="campo" id="campo-opacidad" hidden><span>Opacidad del plano</span><input id="f-opacidad" type="range" min="0.1" max="1" step="0.05"></label>
+      <div class="acciones" id="acciones-fondo" hidden><button type="button" class="boton" id="b-fondo-quitar">Quitar plano</button></div>
+      <p class="ayuda modo" id="modo-ayuda" aria-live="polite" hidden></p>
+      <input type="file" id="f-archivo" accept="image/png,image/jpeg" hidden>
+    </section>
+    <section class="seccion" aria-labelledby="t-agregar">
+      <h2 id="t-agregar">Añadir mueble</h2>
+      <div class="catalogo" id="catalogo"></div>
+      <p class="ayuda">Aparece en el centro de la estancia; arrástralo a su sitio. Cuadros, espejos, televisores, baldas y apliques se cuelgan solos en la pared libre más cercana.</p>
+    </section>
+    <section class="seccion" aria-labelledby="t-mios">
+      <h2 id="t-mios">Mis muebles <span class="contador" id="contador-mios"></span></h2>
+      <ul class="lista distribuciones" id="lista-mios"></ul>
+      <p class="ayuda" id="ayuda-mios" hidden></p>
+    </section>
+    <section class="seccion" aria-labelledby="t-lista">
+      <h2 id="t-lista">En la estancia <span class="contador" id="contador"></span></h2>
+      <ul class="lista" id="lista-muebles"></ul>
+      <p class="vacio" id="lista-vacia">Todavía no hay muebles.</p>
+    </section>
+    <section class="seccion" aria-labelledby="t-distribuciones">
+      <h2 id="t-distribuciones">Distribuciones <span class="contador" id="contador-distribuciones"></span></h2>
+      <form class="fila-guardar" id="form-distribucion" autocomplete="off">
+        <label class="campo"><span class="sr">Nombre de la distribución</span><span class="entrada"><input id="d-nombre" type="text" maxlength="40" placeholder="Nombre, p. ej. Estudio"></span></label>
+        <button type="submit" class="boton">Guardar</button>
+      </form>
+      <ul class="lista distribuciones" id="lista-distribuciones"></ul>
+      <p class="ayuda" id="ayuda-distribuciones">Guarda cómo están colocados los muebles para probar otras ideas y volver con un clic.</p>
+    </section>
+    <section class="seccion" aria-labelledby="t-exportar">
+      <h2 id="t-exportar">Exportar</h2>
+      <div class="acciones">
+        <button type="button" class="boton" id="x-svg" title="Plano acotado en SVG">Plano SVG</button>
+        <button type="button" class="boton" id="x-imprimir" title="Plano acotado a escala, una hoja A4 por planta, para imprimir o guardar en PDF">Imprimir o PDF</button>
+        <button type="button" class="boton" id="x-png" title="Imagen de la vista actual">Imagen PNG</button>
+        <button type="button" class="boton" id="x-glb" title="Modelo 3D para Blender, Godot o Unity">Modelo 3D (.glb)</button>
+      </div>
+    </section>
+    <section class="seccion" aria-labelledby="t-asistente">
+      <h2 id="t-asistente">Con un asistente de IA</h2>
+      <p class="ayuda">Para ChatGPT, Claude o Gemini en el navegador: copia el espacio y pégaselo; pega aquí lo que te devuelva (un espacio entero o una lista de cambios).</p>
+      <div class="acciones">
+        <button type="button" class="boton" id="b-copiar-agente">Copiar para el asistente</button>
+        <button type="button" class="boton" id="b-pegar">Pegar cambios…</button>
+      </div>
+    </section>
+  </aside>
+
+  <main class="lienzo" id="lienzo" aria-label="Vista del espacio">
+    <div class="invitacion" id="invitacion" hidden>
+      <p><strong>Empieza por las medidas.</strong> Ajusta ancho, largo y alto de la estancia y añade muebles desde el panel.</p>
+      <p><button type="button" class="boton" id="b-ayuda-rapida">Ayuda rápida</button></p>
+    </div>
+    <div class="aviso-flotante" id="aviso" role="status" aria-live="polite" hidden></div>
+    <div class="mando" id="mando" aria-hidden="true" hidden><div class="mando-palo" id="mando-palo"></div></div>
+    <div class="bloqueo" id="bloqueo" role="alert" hidden>
+      <p><strong>El archivo cambió fuera y tiene errores.</strong> No se guarda encima para no perder ese cambio. Cuando se corrija se cargará solo.</p>
+      <ul id="bloqueo-errores"></ul>
+      <button type="button" class="boton peligro" id="b-mi-version">Guardar mi versión encima</button>
+    </div>
+    <div class="bloqueo abierto" id="abierto" role="status" hidden>
+      <p id="abierto-texto"></p>
+      <ul id="abierto-omitidos"></ul>
+      <button type="button" class="boton acento" id="b-abierto-carpeta">Abrir su carpeta</button>
+    </div>
+  </main>
+
+  <aside class="panel der" id="panel-der" aria-label="Mueble seleccionado e incidencias">
+    <section class="seccion" aria-labelledby="t-mueble">
+      <h2 id="t-mueble">Mueble</h2>
+      <p class="vacio" id="sin-seleccion">Selecciona un mueble en la vista o en la lista para editar sus medidas.</p>
+      <p class="ayuda modo" id="m-grupo" aria-live="polite" hidden></p>
+      <form id="ficha" hidden autocomplete="off">
+        <label class="campo"><span>Nombre</span><span class="entrada"><input id="m-nombre" type="text" maxlength="60"></span></label>
+        <label class="campo"><span>Tipo</span><span class="entrada"><select id="m-tipo"></select></span></label>
+        <div class="campos tres">
+          <label class="campo"><span>Ancho</span><span class="entrada"><input id="m-ancho" type="number" inputmode="decimal" min="1" step="1"><i>cm</i></span></label>
+          <label class="campo"><span>Fondo</span><span class="entrada"><input id="m-fondo" type="number" inputmode="decimal" min="1" step="1"><i>cm</i></span></label>
+          <label class="campo"><span>Alto</span><span class="entrada"><input id="m-alto" type="number" inputmode="decimal" min="1" step="1"><i>cm</i></span></label>
+        </div>
+        <div class="campos tres">
+          <label class="campo"><span>X</span><span class="entrada"><input id="m-x" type="number" inputmode="decimal" step="1"><i>cm</i></span></label>
+          <label class="campo"><span>Y</span><span class="entrada"><input id="m-y" type="number" inputmode="decimal" step="1"><i>cm</i></span></label>
+          <label class="campo"><span>Giro</span><span class="entrada"><input id="m-giro" type="number" inputmode="decimal" step="15"><i>°</i></span></label>
+        </div>
+        <div class="campos dos">
+          <label class="campo"><span>Altura del suelo</span><span class="entrada"><input id="m-elevacion" type="number" inputmode="decimal" min="0" step="1"><i>cm</i></span></label>
+          <label class="campo"><span>Color</span><span class="entrada color"><input id="m-color" type="color"></span></label>
+        </div>
+        <label class="casilla"><input id="m-bloqueado" type="checkbox"> <span>Bloqueado (no se mueve al arrastrar)</span></label>
+        <p class="ayuda" id="m-entra"></p>
+        <div class="fotos">
+          <div class="fotos-cabecera"><span>Fotos del mueble</span><button type="button" class="boton" id="b-foto-mueble" title="Copiar una foto a fotos/ junto al espacio y asociarla a este mueble">Añadir foto…</button></div>
+          <ul class="miniaturas" id="fotos-mueble" aria-label="Fotos del mueble"></ul>
+        </div>
+        <p class="error" id="m-error" role="alert" hidden></p>
+        <div class="forma3d">
+          <p class="ayuda" id="m-forma-texto" aria-live="polite"></p>
+          <div class="campos dos" id="m-modelo-campos" hidden>
+            <label class="campo"><span>Tamaño del modelo</span><span class="entrada"><select id="m-ajuste"><option value="medidas">A las medidas</option><option value="modelo">Tamaño real</option></select></span></label>
+            <label class="campo"><span>Giro del modelo</span><span class="entrada"><input id="m-giro-modelo" type="number" inputmode="numeric" step="90" min="0" max="270"><i>°</i></span></label>
+          </div>
+          <div class="acciones">
+            <button type="button" class="boton" id="m-modelo" title="Usar un modelo 3D (.glb) propio para este mueble">Modelo 3D…</button>
+            <button type="button" class="boton" id="m-modelo-medidas" title="El mueble toma el tamaño real del modelo" hidden>Medidas del modelo</button>
+            <button type="button" class="boton" id="m-modelo-quitar" hidden>Quitar modelo</button>
+            <button type="button" class="boton" id="m-guardar-mio" title="Guardarlo para usarlo en otros espacios de esta carpeta">Guardar en Mis muebles</button>
+          </div>
+          <input type="file" id="f-modelo" accept=".glb,model/gltf-binary" hidden>
+        </div>
+        <div class="acciones">
+          <button type="button" class="boton" id="m-girar" title="Girar 90° (Mayús+R)">Girar 90°</button>
+          <button type="button" class="boton" id="m-duplicar" title="Duplicar (Ctrl+D)">Duplicar</button>
+          <button type="button" class="boton peligro" id="m-eliminar" title="Quitar de la estancia (Supr)">Quitar</button>
+        </div>
+      </form>
+    </section>
+    <section class="seccion" aria-labelledby="t-incidencias">
+      <h2 id="t-incidencias">Incidencias <span class="contador" id="contador-incidencias"></span></h2>
+      <ul class="lista incidencias" id="lista-incidencias"></ul>
+      <p class="vacio" id="sin-incidencias">Nada se solapa ni se sale de la estancia.</p>
+      <p class="ayuda" id="incidencias-otras" hidden></p>
+    </section>
+  </aside>
+
+  <footer class="estado">
+    <span id="estado-guardado">Sin guardar</span>
+    <span class="atajos" id="atajos">Arrastra para mover · Ctrl+clic elige varios · R girar 15° · Mayús+R girar 90° · Mayús al arrastrar: sin imán</span>
+  </footer>
+</div>
+
+<input type="file" id="f-foto" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" hidden>
+<dialog id="dialogo-foto" class="dialogo-foto" aria-label="Foto">
+  <img id="foto-grande" alt="">
+  <p id="foto-ruta" class="ayuda"></p>
+  <div class="acciones">
+    <button type="button" class="boton" id="b-foto-quitar">Quitar la foto</button>
+    <button type="button" class="boton acento" id="b-foto-cerrar">Cerrar</button>
+  </div>
+</dialog>
+<dialog id="dialogo" aria-labelledby="dialogo-titulo">
+  <form method="dialog">
+    <h2 id="dialogo-titulo"></h2>
+    <div id="dialogo-cuerpo"></div>
+    <div class="acciones">
+      <button class="boton" value="cancelar" id="dialogo-cancelar">Cancelar</button>
+      <button class="boton acento" value="aceptar" id="dialogo-aceptar"></button>
+    </div>
+  </form>
+</dialog>
+
+<!--@@ESPACIOS3D_ABIERTO@@-->
+<script>
+/*@@JS@@*/
+</script>
+</body>
+</html>

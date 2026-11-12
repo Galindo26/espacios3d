@@ -1,0 +1,2 @@
+# Casa de referencia v2 (ronda 5): se compara byte a byte; sin conversión de fines de línea.
+tests/referencia_v2/** -text

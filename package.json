@@ -1,0 +1,32 @@
+{
+  "name": "espacios3d",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Herramienta local para modelar espacios 3D y reorganizar muebles; se entrega como una carpeta.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node scripts/build.mjs && node --test \"tests/unit/*.test.mjs\"",
+    "e2e": "node scripts/build.mjs && python tests/e2e/run_e2e.py",
+    "check": "npm run typecheck && npm test && npm run e2e",
+    "motores": "node scripts/build.mjs && node tests/motores/comprobar.mjs"
+  },
+  "devDependencies": {
+    "@fontsource/ibm-plex-sans": "5.3.0",
+    "@types/node": "24.19.2",
+    "@types/three": "0.187.0",
+    "ajv": "8.20.0",
+    "earcut": "3.2.4",
+    "esbuild": "0.28.2",
+    "gltf-validator": "2.0.0-dev.3.10",
+    "jpeg-js": "0.4.4",
+    "polygon-clipping": "0.15.7",
+    "three": "0.187.0",
+    "typescript": "7.0.2"
+  }
+}

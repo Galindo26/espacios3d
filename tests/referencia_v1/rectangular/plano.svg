@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -50 480 420" width="960" height="840" font-family="sans-serif">
+<title>Caso rectangular</title>
+<rect x="-50" y="-50" width="480" height="420" fill="#fbfaf7"/>
+<polygon points="-10,-10 390,-10 390,330 -10,330" fill="#3b4046"/>
+<polygon points="0,0 380,0 380,320 0,320" fill="#efe8dc"/>
+<polygon points="0,300 0,220 -10.5,220 -10.5,300" fill="#efe8dc"/>
+<polygon points="0,300 0,220 10.4,220.7 20.7,222.7 30.6,226.1 40,230.7 48.7,236.5 56.6,243.4 63.5,251.3 69.3,260 73.9,269.4 77.3,279.3 79.3,289.6 80,300" fill="none" stroke="#8b8378" stroke-width="0.8" stroke-dasharray="4 3"/>
+<polygon points="140,0 260,0 260,-10.5 140,-10.5" fill="#a9c9e8"/>
+<g><title>cama «Cama» 150x200x50 cm</title>
+<polygon points="380,45 380,195 180,195 180,45" fill="#c9b79c" fill-opacity="0.9" stroke="#2b2f33" stroke-width="0.8"/>
+<line x1="180" y1="45" x2="180" y2="195" stroke="#2b2f33" stroke-width="3"/>
+<text x="280" y="120" font-size="8.9" text-anchor="middle" dominant-baseline="middle" fill="#2b2f33">Cama</text>
+</g>
+<g><title>escritorio «Escritorio» 120x60x75 cm</title>
+<polygon points="0,0 120,0 120,60 0,60" fill="#b89a74" fill-opacity="0.9" stroke="#d48a00" stroke-width="2"/>
+<line x1="0" y1="60" x2="120" y2="60" stroke="#2b2f33" stroke-width="3"/>
+<text x="60" y="30" font-size="8.9" text-anchor="middle" dominant-baseline="middle" fill="#2b2f33">Escritorio</text>
+</g>
+<g><title>silla «Silla» 45x50x90 cm</title>
+<polygon points="82.5,95 37.5,95 37.5,45 82.5,45" fill="#6f7d8c" fill-opacity="0.9" stroke="#d48a00" stroke-width="2"/>
+<line x1="82.5" y1="45" x2="37.5" y2="45" stroke="#2b2f33" stroke-width="3"/>
+<text x="60" y="70" font-size="8.9" text-anchor="middle" dominant-baseline="middle" fill="#2b2f33">Silla</text>
+</g>
+<g><title>armario «Armario» 100x60x200 cm</title>
+<polygon points="-10,200 90,200 90,260 -10,260" fill="#a8876a" fill-opacity="0.9" stroke="#c0392b" stroke-width="2"/>
+<line x1="-10" y1="260" x2="90" y2="260" stroke="#2b2f33" stroke-width="3"/>
+<text x="40" y="230" font-size="8.9" text-anchor="middle" dominant-baseline="middle" fill="#2b2f33">Armario</text>
+</g>
+<g><title>alfombra «Alfombra» 140x100x1 cm</title>
+<polygon points="120,150 260,150 260,250 120,250" fill="#b9a48a" fill-opacity="0.9" stroke="#2b2f33" stroke-width="0.8"/>
+<line x1="120" y1="250" x2="260" y2="250" stroke="#2b2f33" stroke-width="3"/>
+<text x="190" y="200" font-size="8.9" text-anchor="middle" dominant-baseline="middle" fill="#2b2f33">Alfombra</text>
+</g>
+<text x="190" y="-18.9" font-size="8.9" text-anchor="middle" dominant-baseline="middle" fill="#5b6670">380 cm</text>
+<text x="398.9" y="160" font-size="8.9" text-anchor="middle" dominant-baseline="middle" fill="#5b6670">320 cm</text>
+<text x="190" y="338.9" font-size="8.9" text-anchor="middle" dominant-baseline="middle" fill="#5b6670">380 cm</text>
+<text x="-18.9" y="160" font-size="8.9" text-anchor="middle" dominant-baseline="middle" fill="#5b6670">320 cm</text>
+</svg>

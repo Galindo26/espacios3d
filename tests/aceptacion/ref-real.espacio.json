@@ -1,0 +1,297 @@
+{
+  "formato": "espacios3d",
+  "version": 2,
+  "nombre": "Plano real (referencia aproximada)",
+  "plantas": [
+    {
+      "id": "pb",
+      "nombre": "Planta baja",
+      "nivel": 0,
+      "grosorExterior": 20,
+      "estancias": [
+        {
+          "id": "cocina",
+          "nombre": "Eat-in Kitchen",
+          "contorno": [
+            [
+              82.1,
+              264.4
+            ],
+            [
+              180.2,
+              264.4
+            ],
+            [
+              180.2,
+              194.3
+            ],
+            [
+              274.4,
+              50.1
+            ],
+            [
+              456.6,
+              50.1
+            ],
+            [
+              552.7,
+              176.2
+            ],
+            [
+              552.7,
+              316.4
+            ],
+            [
+              584.8,
+              316.4
+            ],
+            [
+              584.8,
+              604.8
+            ],
+            [
+              82.1,
+              604.8
+            ]
+          ],
+          "altura": 250,
+          "huecos": [
+            {
+              "id": "p-cocina",
+              "tipo": "puerta",
+              "muro": 8,
+              "desde": 90,
+              "ancho": 74,
+              "alto": 205,
+              "antepecho": 0,
+              "abre": "dentro",
+              "bisagra": "inicio"
+            }
+          ]
+        },
+        {
+          "id": "despensa",
+          "nombre": "Pantry",
+          "contorno": [
+            [
+              82.1,
+              614.8
+            ],
+            [
+              344.5,
+              614.8
+            ],
+            [
+              344.5,
+              684.9
+            ],
+            [
+              82.1,
+              684.9
+            ]
+          ],
+          "altura": 250,
+          "huecos": []
+        },
+        {
+          "id": "lavadero",
+          "nombre": "Laundry Storage",
+          "contorno": [
+            [
+              82.1,
+              694.9
+            ],
+            [
+              350.5,
+              694.9
+            ],
+            [
+              350.5,
+              891.2
+            ],
+            [
+              300.4,
+              891.2
+            ],
+            [
+              300.4,
+              1081.4
+            ],
+            [
+              82.1,
+              1081.4
+            ]
+          ],
+          "altura": 250,
+          "huecos": []
+        },
+        {
+          "id": "aseo",
+          "nombre": "1/2 Bath",
+          "contorno": [
+            [
+              316.4,
+              897.2
+            ],
+            [
+              584.8,
+              897.2
+            ],
+            [
+              584.8,
+              1081.4
+            ],
+            [
+              316.4,
+              1081.4
+            ]
+          ],
+          "altura": 250,
+          "huecos": []
+        },
+        {
+          "id": "distribuidor",
+          "nombre": "Distribuidor (sin rótulo)",
+          "contorno": [
+            [
+              356.5,
+              614.8
+            ],
+            [
+              584.8,
+              614.8
+            ],
+            [
+              584.8,
+              891.2
+            ],
+            [
+              356.5,
+              891.2
+            ]
+          ],
+          "altura": 250,
+          "huecos": []
+        },
+        {
+          "id": "salon",
+          "nombre": "Formal Living / Formal Dining",
+          "contorno": [
+            [
+              594.8,
+              320.4
+            ],
+            [
+              1077.4,
+              320.4
+            ],
+            [
+              1077.4,
+              264.4
+            ],
+            [
+              1536,
+              264.4
+            ],
+            [
+              1536,
+              735
+            ],
+            [
+              594.8,
+              735
+            ]
+          ],
+          "altura": 250,
+          "huecos": [
+            {
+              "id": "p-salon-recibidor",
+              "tipo": "puerta",
+              "muro": 4,
+              "desde": 775,
+              "ancho": 130,
+              "alto": 205,
+              "antepecho": 0,
+              "abre": "dentro",
+              "bisagra": "inicio"
+            },
+            {
+              "id": "p-salon-familia",
+              "tipo": "puerta",
+              "muro": 4,
+              "desde": 322,
+              "ancho": 80,
+              "alto": 205,
+              "antepecho": 0,
+              "abre": "dentro",
+              "bisagra": "inicio"
+            }
+          ]
+        },
+        {
+          "id": "recibidor",
+          "nombre": "Entrance",
+          "contorno": [
+            [
+              594.8,
+              745
+            ],
+            [
+              1067.4,
+              745
+            ],
+            [
+              1067.4,
+              1081.4
+            ],
+            [
+              594.8,
+              1081.4
+            ]
+          ],
+          "altura": 250,
+          "huecos": [
+            {
+              "id": "entrada",
+              "tipo": "puerta",
+              "muro": 2,
+              "desde": 176,
+              "ancho": 100,
+              "alto": 205,
+              "antepecho": 0,
+              "abre": "dentro",
+              "bisagra": "inicio"
+            }
+          ]
+        },
+        {
+          "id": "familia",
+          "nombre": "Family",
+          "contorno": [
+            [
+              1077.4,
+              745
+            ],
+            [
+              1536,
+              745
+            ],
+            [
+              1536,
+              1081.4
+            ],
+            [
+              1077.4,
+              1081.4
+            ]
+          ],
+          "altura": 250,
+          "huecos": []
+        }
+      ],
+      "muebles": []
+    }
+  ],
+  "distribuciones": [],
+  "notas": ""
+}

@@ -1,0 +1,61 @@
+{
+  "formato": "espacios3d",
+  "version": 1,
+  "nombre": "Caso diagonal",
+  "estancia": {
+    "contorno": [
+      [
+        0,
+        0
+      ],
+      [
+        300,
+        0
+      ],
+      [
+        400,
+        137
+      ],
+      [
+        400,
+        300
+      ],
+      [
+        0,
+        300
+      ]
+    ],
+    "altura": 240,
+    "huecos": [
+      {
+        "id": "p",
+        "tipo": "puerta",
+        "muro": 1,
+        "desde": 20,
+        "ancho": 80,
+        "bisagra": "fin",
+        "abre": "dentro"
+      }
+    ]
+  },
+  "muebles": [
+    {
+      "id": "m",
+      "tipo": "caja",
+      "ancho": 20,
+      "fondo": 20,
+      "alto": 80,
+      "x": 320,
+      "y": 60
+    },
+    {
+      "id": "alto",
+      "tipo": "caja",
+      "ancho": 50,
+      "fondo": 50,
+      "alto": 260,
+      "x": 200,
+      "y": 200
+    }
+  ]
+}

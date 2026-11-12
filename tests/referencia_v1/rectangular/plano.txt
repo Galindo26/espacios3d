@@ -1,0 +1,48 @@
+Plano de «Caso rectangular». 1 carácter = 6 cm de ancho x 12 cm de alto. x a la derecha, y hacia abajo; origen (-10, -10) en la esquina superior izquierda del dibujo.
+#########################VVVVVVVVVVVVVVVVVVVV######################
+##BBBBBBBBBBBBBBBBBBBB...........................................##
+##BBBBBBBBBBBBBBBBBBBB...........................................##
+##BBBBBBBBBBBBBBBBBBBB...........................................##
+##BBBBBBBBBBBBBBBBBBBB...........................................##
+##BBBBBBCCCCCCCBBBBBBB..........AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA##
+##......CCCCCCC.................AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA##
+##......CCCCCCC.................AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA##
+##......CCCCCCC.................AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA##
+##..............................AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA##
+##..............................AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA##
+##..............................AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA##
+##..............................AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA##
+##....................EEEEEEEEEEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA##
+##....................EEEEEEEEEEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA##
+##....................EEEEEEEEEEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA##
+##....................EEEEEEEEEEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA##
+##....................EEEEEEEEEEEEEEEEEEEEEEE....................##
+##DDDDDDDDDDDDDDD.....EEEEEEEEEEEEEEEEEEEEEEE....................##
+PPDDDDDDDDDDDDDDD.....EEEEEEEEEEEEEEEEEEEEEEE....................##
+PPDDDDDDDDDDDDDDD.....EEEEEEEEEEEEEEEEEEEEEEE....................##
+PPDDDDDDDDDDDDDDD.....EEEEEEEEEEEEEEEEEEEEEEE....................##
+PP...............................................................##
+PP...............................................................##
+PP...............................................................##
+PP...............................................................##
+##...............................................................##
+###################################################################
+
+
+Leyenda: # muro, P puerta, V ventana, _ paso, . suelo libre, ! choque.
+  A  cama «Cama» 150x200x50 cm en (280, 120), giro 90°, frente hacia izquierda (-x)
+  B  escritorio «Escritorio» 120x60x75 cm en (60, 30), giro 0°, frente hacia abajo (+y)
+  C  silla «Silla» 45x50x90 cm en (60, 70), giro 180°, frente hacia arriba (-y)
+  D  armario «Armario» 100x60x200 cm en (40, 230), giro 0°, frente hacia abajo (+y)
+  E  alfombra «Alfombra» 140x100x1 cm en (190, 200), giro 0°, frente hacia abajo (+y)
+  muro 0: de (0, 0) a (380, 0), 380 cm
+  muro 1: de (380, 0) a (380, 320), 320 cm
+  muro 2: de (380, 320) a (0, 320), 380 cm
+  muro 3: de (0, 320) a (0, 0), 320 cm
+  puerta puerta: muro 3, desde 20 cm, 80 cm de ancho, abre dentro, bisagra inicio (zona libre de paso delante: 60 cm)
+  ventana ventana: muro 0, desde 140 cm, 120 cm de ancho, antepecho 95 cm (zona libre de paso delante: no)
+Incidencias (4):
+  [error] «Armario» (armario) se sale de la estancia o atraviesa un muro
+  [aviso] «Silla» (silla) entra bajo «Escritorio» (escritorio); el respaldo es más alto que el hueco (65 cm): comprueba que cabe como la dejas
+  [error] «Armario» (armario) está en el barrido de la puerta «puerta»: no se podría abrir del todo
+  [aviso] delante de «Armario» (armario) no caben los 70 cm libres que necesita: hay un muro

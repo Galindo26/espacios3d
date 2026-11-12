@@ -1,0 +1,92 @@
+{
+  "formato": "espacios3d",
+  "version": 1,
+  "nombre": "Caso rectangular",
+  "estancia": {
+    "contorno": [
+      [
+        0,
+        0
+      ],
+      [
+        380,
+        0
+      ],
+      [
+        380,
+        320
+      ],
+      [
+        0,
+        320
+      ]
+    ],
+    "huecos": [
+      {
+        "id": "puerta",
+        "tipo": "puerta",
+        "muro": 3,
+        "desde": 20,
+        "ancho": 80
+      },
+      {
+        "id": "ventana",
+        "tipo": "ventana",
+        "muro": 0,
+        "desde": 140,
+        "ancho": 120,
+        "antepecho": 95,
+        "alto": 110
+      }
+    ]
+  },
+  "muebles": [
+    {
+      "id": "cama",
+      "tipo": "cama",
+      "ancho": 150,
+      "fondo": 200,
+      "alto": 50,
+      "x": 280,
+      "y": 120,
+      "giro": 90
+    },
+    {
+      "id": "escritorio",
+      "tipo": "escritorio",
+      "ancho": 120,
+      "fondo": 60,
+      "alto": 75,
+      "x": 60,
+      "y": 30
+    },
+    {
+      "id": "silla",
+      "tipo": "silla",
+      "ancho": 45,
+      "fondo": 50,
+      "alto": 90,
+      "x": 60,
+      "y": 70,
+      "giro": 180
+    },
+    {
+      "id": "armario",
+      "tipo": "armario",
+      "ancho": 100,
+      "fondo": 60,
+      "alto": 200,
+      "x": 40,
+      "y": 230
+    },
+    {
+      "id": "alfombra",
+      "tipo": "alfombra",
+      "ancho": 140,
+      "fondo": 100,
+      "alto": 1,
+      "x": 190,
+      "y": 200
+    }
+  ]
+}

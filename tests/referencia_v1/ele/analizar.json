@@ -1,0 +1,13 @@
+{
+  "ok": false,
+  "incidencias": [
+    {
+      "gravedad": "error",
+      "regla": "fuera",
+      "mensaje": "\u00abCaja\u00bb (fuera) se sale de la estancia o atraviesa un muro",
+      "muebles": [
+        "fuera"
+      ]
+    }
+  ]
+}

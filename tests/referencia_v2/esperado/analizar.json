@@ -1,0 +1,15 @@
+{
+ "ok": true,
+ "incidencias": [
+  {
+   "gravedad": "aviso",
+   "regla": "escalera",
+   "mensaje": "La escalera «escalera», tramo 1, tiene peldaños de 20.9 cm de huella (menos de 22): es muy empinada; alárgala o pon menos peldaños",
+   "muebles": [],
+   "planta": "planta-baja",
+   "escaleras": [
+    "escalera"
+   ]
+  }
+ ]
+}

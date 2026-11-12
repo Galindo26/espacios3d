@@ -1,0 +1,26 @@
+{
+  "formato": "espacios3d",
+  "version": 1,
+  "nombre": "Caso vacio",
+  "estancia": {
+    "contorno": [
+      [
+        0,
+        0
+      ],
+      [
+        250,
+        0
+      ],
+      [
+        250,
+        250
+      ],
+      [
+        0,
+        250
+      ]
+    ]
+  },
+  "muebles": []
+}

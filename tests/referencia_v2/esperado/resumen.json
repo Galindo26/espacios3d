@@ -1,0 +1,618 @@
+{
+ "nombre": "Casa de referencia",
+ "version": 2,
+ "plantas": [
+  {
+   "id": "planta-baja",
+   "nombre": "Planta baja",
+   "nivel": 0,
+   "grosorExterior": 10,
+   "estancias": [
+    {
+     "id": "estancia",
+     "nombre": "Salón",
+     "altura": 250,
+     "area_m2": 17.1,
+     "muros": [
+      {
+       "muro": 0,
+       "de": [
+        0,
+        0
+       ],
+       "a": [
+        450,
+        0
+       ],
+       "longitud": 450
+      },
+      {
+       "muro": 1,
+       "de": [
+        450,
+        0
+       ],
+       "a": [
+        450,
+        380
+       ],
+       "longitud": 380
+      },
+      {
+       "muro": 2,
+       "de": [
+        450,
+        380
+       ],
+       "a": [
+        0,
+        380
+       ],
+       "longitud": 450
+      },
+      {
+       "muro": 3,
+       "de": [
+        0,
+        380
+       ],
+       "a": [
+        0,
+        0
+       ],
+       "longitud": 380
+      }
+     ],
+     "huecos": [
+      {
+       "id": "ventana-salon",
+       "tipo": "ventana",
+       "muro": 0,
+       "desde": 100,
+       "ancho": 120,
+       "alto": 120,
+       "antepecho": 90
+      },
+      {
+       "id": "puerta-cocina",
+       "tipo": "puerta",
+       "muro": 1,
+       "desde": 40,
+       "ancho": 80,
+       "alto": 205,
+       "antepecho": 0,
+       "abre": "dentro",
+       "bisagra": "inicio"
+      },
+      {
+       "id": "paso-salon",
+       "tipo": "paso",
+       "muro": 2,
+       "desde": 300,
+       "ancho": 90,
+       "alto": 205,
+       "antepecho": 0
+      }
+     ],
+     "elementos": [
+      {
+       "id": "radiador",
+       "tipo": "radiador",
+       "forma": "adosado",
+       "muro": 0,
+       "desde": 300,
+       "ancho": 80,
+       "fondo": 10,
+       "alto": 60,
+       "elevacion": 15
+      }
+     ],
+     "faldones": []
+    },
+    {
+     "id": "cocina",
+     "nombre": "Cocina",
+     "altura": 250,
+     "area_m2": 11.4,
+     "muros": [
+      {
+       "muro": 0,
+       "de": [
+        460,
+        0
+       ],
+       "a": [
+        760,
+        0
+       ],
+       "longitud": 300
+      },
+      {
+       "muro": 1,
+       "de": [
+        760,
+        0
+       ],
+       "a": [
+        760,
+        380
+       ],
+       "longitud": 380
+      },
+      {
+       "muro": 2,
+       "de": [
+        760,
+        380
+       ],
+       "a": [
+        460,
+        380
+       ],
+       "longitud": 300
+      },
+      {
+       "muro": 3,
+       "de": [
+        460,
+        380
+       ],
+       "a": [
+        460,
+        0
+       ],
+       "longitud": 380
+      }
+     ],
+     "huecos": [],
+     "elementos": [],
+     "faldones": []
+    },
+    {
+     "id": "pasillo",
+     "nombre": "Pasillo",
+     "altura": 250,
+     "area_m2": 9.12,
+     "muros": [
+      {
+       "muro": 0,
+       "de": [
+        0,
+        390
+       ],
+       "a": [
+        760,
+        390
+       ],
+       "longitud": 760
+      },
+      {
+       "muro": 1,
+       "de": [
+        760,
+        390
+       ],
+       "a": [
+        760,
+        510
+       ],
+       "longitud": 120
+      },
+      {
+       "muro": 2,
+       "de": [
+        760,
+        510
+       ],
+       "a": [
+        0,
+        510
+       ],
+       "longitud": 760
+      },
+      {
+       "muro": 3,
+       "de": [
+        0,
+        510
+       ],
+       "a": [
+        0,
+        390
+       ],
+       "longitud": 120
+      }
+     ],
+     "huecos": [
+      {
+       "id": "entrada",
+       "tipo": "puerta",
+       "muro": 3,
+       "desde": 20,
+       "ancho": 90,
+       "alto": 205,
+       "antepecho": 0,
+       "abre": "dentro",
+       "bisagra": "inicio"
+      }
+     ],
+     "elementos": [
+      {
+       "id": "enchufe",
+       "tipo": "enchufe",
+       "forma": "punto",
+       "muro": 0,
+       "desde": 300,
+       "altura": 30
+      }
+     ],
+     "faldones": []
+    }
+   ],
+   "muebles": [
+    {
+     "id": "sofa",
+     "nombre": "Sofá",
+     "tipo": "sofa",
+     "ancho": 200,
+     "fondo": 90,
+     "alto": 85,
+     "x": 45,
+     "y": 200,
+     "giro": 270,
+     "elevacion": 0,
+     "color": "#7d8a7a",
+     "bloqueado": false,
+     "holguraFrente": 60,
+     "huecoInferior": 0,
+     "estancia": "estancia"
+    },
+    {
+     "id": "mesa",
+     "nombre": "Mesa",
+     "tipo": "mesa",
+     "ancho": 120,
+     "fondo": 80,
+     "alto": 75,
+     "x": 250,
+     "y": 200,
+     "giro": 0,
+     "elevacion": 0,
+     "color": "#b89a74",
+     "bloqueado": false,
+     "holguraFrente": 60,
+     "huecoInferior": 65,
+     "piezas": [
+      {
+       "forma": "caja",
+       "x": 0,
+       "y": 0,
+       "z": 71,
+       "ancho": 120,
+       "fondo": 80,
+       "alto": 4,
+       "giro": 0
+      },
+      {
+       "forma": "cilindro",
+       "x": -50,
+       "y": -30,
+       "z": 0,
+       "ancho": 8,
+       "fondo": 8,
+       "alto": 71,
+       "giro": 0
+      },
+      {
+       "forma": "cilindro",
+       "x": 50,
+       "y": 30,
+       "z": 0,
+       "ancho": 8,
+       "fondo": 8,
+       "alto": 71,
+       "giro": 0
+      }
+     ],
+     "estancia": "estancia"
+    },
+    {
+     "id": "cuadro",
+     "nombre": "Cuadro",
+     "tipo": "cuadro",
+     "ancho": 60,
+     "fondo": 3,
+     "alto": 45,
+     "x": 255,
+     "y": 1.5,
+     "giro": 0,
+     "elevacion": 140,
+     "color": "#7a5c43",
+     "bloqueado": false,
+     "holguraFrente": 0,
+     "huecoInferior": 0,
+     "estancia": "estancia"
+    },
+    {
+     "id": "sillon",
+     "nombre": "Caja",
+     "tipo": "butaca",
+     "ancho": 50,
+     "fondo": 50,
+     "alto": 50,
+     "x": 380,
+     "y": 300,
+     "giro": 0,
+     "elevacion": 0,
+     "color": "#9aa3ab",
+     "bloqueado": false,
+     "holguraFrente": 0,
+     "huecoInferior": 0,
+     "modelo": {
+      "archivo": "modelos/sillon.glb",
+      "giro": 0,
+      "ajuste": "medidas"
+     },
+     "estancia": "estancia"
+    }
+   ],
+   "conexiones": [
+    {
+     "hueco": "puerta-cocina",
+     "tipo": "puerta",
+     "de": "estancia",
+     "a": "cocina",
+     "grosor": 10
+    },
+    {
+     "hueco": "paso-salon",
+     "tipo": "paso",
+     "de": "estancia",
+     "a": "pasillo",
+     "grosor": 10
+    },
+    {
+     "hueco": "entrada",
+     "tipo": "puerta",
+     "de": "pasillo",
+     "a": "exterior",
+     "grosor": 10
+    }
+   ],
+   "fondos": [
+    {
+     "id": "plano",
+     "archivo": "planos/plano.png",
+     "anchoPx": 200,
+     "altoPx": 160,
+     "escala": 3.85,
+     "x": -5,
+     "y": -5,
+     "giro": 0,
+     "opacidad": 0.5
+    }
+   ]
+  },
+  {
+   "id": "p1",
+   "nombre": "Primera",
+   "nivel": 280,
+   "grosorExterior": 10,
+   "estancias": [
+    {
+     "id": "estancia-p1",
+     "nombre": "Salón",
+     "altura": 250,
+     "area_m2": 17.1,
+     "muros": [
+      {
+       "muro": 0,
+       "de": [
+        0,
+        0
+       ],
+       "a": [
+        450,
+        0
+       ],
+       "longitud": 450
+      },
+      {
+       "muro": 1,
+       "de": [
+        450,
+        0
+       ],
+       "a": [
+        450,
+        380
+       ],
+       "longitud": 380
+      },
+      {
+       "muro": 2,
+       "de": [
+        450,
+        380
+       ],
+       "a": [
+        0,
+        380
+       ],
+       "longitud": 450
+      },
+      {
+       "muro": 3,
+       "de": [
+        0,
+        380
+       ],
+       "a": [
+        0,
+        0
+       ],
+       "longitud": 380
+      }
+     ],
+     "huecos": [
+      {
+       "id": "ventana-salon-p1",
+       "tipo": "ventana",
+       "muro": 0,
+       "desde": 100,
+       "ancho": 120,
+       "alto": 120,
+       "antepecho": 90
+      }
+     ],
+     "elementos": [],
+     "faldones": [
+      {
+       "muro": 0,
+       "alturaEnMuro": 150,
+       "alcance": 150
+      }
+     ]
+    },
+    {
+     "id": "cocina-p1",
+     "nombre": "Cocina",
+     "altura": 250,
+     "area_m2": 11.4,
+     "muros": [
+      {
+       "muro": 0,
+       "de": [
+        460,
+        0
+       ],
+       "a": [
+        760,
+        0
+       ],
+       "longitud": 300
+      },
+      {
+       "muro": 1,
+       "de": [
+        760,
+        0
+       ],
+       "a": [
+        760,
+        380
+       ],
+       "longitud": 380
+      },
+      {
+       "muro": 2,
+       "de": [
+        760,
+        380
+       ],
+       "a": [
+        460,
+        380
+       ],
+       "longitud": 300
+      },
+      {
+       "muro": 3,
+       "de": [
+        460,
+        380
+       ],
+       "a": [
+        460,
+        0
+       ],
+       "longitud": 380
+      }
+     ],
+     "huecos": [],
+     "elementos": [],
+     "faldones": []
+    },
+    {
+     "id": "pasillo-p1",
+     "nombre": "Pasillo",
+     "altura": 250,
+     "area_m2": 9.12,
+     "muros": [
+      {
+       "muro": 0,
+       "de": [
+        0,
+        390
+       ],
+       "a": [
+        760,
+        390
+       ],
+       "longitud": 760
+      },
+      {
+       "muro": 1,
+       "de": [
+        760,
+        390
+       ],
+       "a": [
+        760,
+        510
+       ],
+       "longitud": 120
+      },
+      {
+       "muro": 2,
+       "de": [
+        760,
+        510
+       ],
+       "a": [
+        0,
+        510
+       ],
+       "longitud": 760
+      },
+      {
+       "muro": 3,
+       "de": [
+        0,
+        510
+       ],
+       "a": [
+        0,
+        390
+       ],
+       "longitud": 120
+      }
+     ],
+     "huecos": [],
+     "elementos": [],
+     "faldones": []
+    }
+   ],
+   "muebles": [],
+   "conexiones": [],
+   "fondos": []
+  }
+ ],
+ "distribuciones": [
+  "Base"
+ ],
+ "incidencias": [
+  {
+   "gravedad": "aviso",
+   "regla": "escalera",
+   "mensaje": "La escalera «escalera», tramo 1, tiene peldaños de 20.9 cm de huella (menos de 22): es muy empinada; alárgala o pon menos peldaños",
+   "muebles": [],
+   "planta": "planta-baja",
+   "escaleras": [
+    "escalera"
+   ]
+  }
+ ],
+ "versionEnDisco": 2,
+ "avisos": []
+}

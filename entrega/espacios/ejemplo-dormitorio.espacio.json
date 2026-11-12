@@ -1,0 +1,196 @@
+{
+  "formato": "espacios3d",
+  "version": 2,
+  "nombre": "Dormitorio de ejemplo",
+  "plantas": [
+    {
+      "id": "planta-baja",
+      "nombre": "Planta baja",
+      "nivel": 0,
+      "grosorExterior": 10,
+      "estancias": [
+        {
+          "id": "estancia",
+          "nombre": "Estancia",
+          "contorno": [
+            [
+              0,
+              0
+            ],
+            [
+              380,
+              0
+            ],
+            [
+              380,
+              320
+            ],
+            [
+              0,
+              320
+            ]
+          ],
+          "altura": 250,
+          "huecos": [
+            {
+              "id": "puerta",
+              "tipo": "puerta",
+              "muro": 3,
+              "desde": 20,
+              "ancho": 80,
+              "alto": 205,
+              "antepecho": 0,
+              "abre": "dentro",
+              "bisagra": "inicio"
+            },
+            {
+              "id": "ventana",
+              "tipo": "ventana",
+              "muro": 0,
+              "desde": 140,
+              "ancho": 120,
+              "alto": 110,
+              "antepecho": 95
+            }
+          ]
+        }
+      ],
+      "muebles": [
+        {
+          "id": "cama",
+          "nombre": "Cama",
+          "tipo": "cama",
+          "ancho": 150,
+          "fondo": 200,
+          "alto": 50,
+          "x": 280,
+          "y": 95,
+          "giro": 90,
+          "elevacion": 0,
+          "color": "#c9b79c",
+          "bloqueado": false,
+          "holguraFrente": 60,
+          "huecoInferior": 0
+        },
+        {
+          "id": "mesilla",
+          "nombre": "Mesilla",
+          "tipo": "mesilla",
+          "ancho": 45,
+          "fondo": 40,
+          "alto": 55,
+          "x": 360,
+          "y": 197.5,
+          "giro": 90,
+          "elevacion": 0,
+          "color": "#b0916f",
+          "bloqueado": false,
+          "holguraFrente": 0,
+          "huecoInferior": 0
+        },
+        {
+          "id": "armario",
+          "nombre": "Armario",
+          "tipo": "armario",
+          "ancho": 120,
+          "fondo": 60,
+          "alto": 200,
+          "x": 220,
+          "y": 290,
+          "giro": 180,
+          "elevacion": 0,
+          "color": "#a8876a",
+          "bloqueado": false,
+          "holguraFrente": 70,
+          "huecoInferior": 0
+        },
+        {
+          "id": "escritorio",
+          "nombre": "Escritorio",
+          "tipo": "escritorio",
+          "ancho": 120,
+          "fondo": 60,
+          "alto": 75,
+          "x": 60,
+          "y": 30,
+          "giro": 0,
+          "elevacion": 0,
+          "color": "#b89a74",
+          "bloqueado": false,
+          "holguraFrente": 70,
+          "huecoInferior": 65
+        },
+        {
+          "id": "silla",
+          "nombre": "Silla",
+          "tipo": "silla",
+          "ancho": 45,
+          "fondo": 50,
+          "alto": 90,
+          "x": 60,
+          "y": 85,
+          "giro": 180,
+          "elevacion": 0,
+          "color": "#6f7d8c",
+          "bloqueado": false,
+          "holguraFrente": 0,
+          "huecoInferior": 0
+        },
+        {
+          "id": "alfombra",
+          "nombre": "Alfombra",
+          "tipo": "alfombra",
+          "ancho": 140,
+          "fondo": 100,
+          "alto": 1,
+          "x": 150,
+          "y": 200,
+          "giro": 0,
+          "elevacion": 0,
+          "color": "#b9a48a",
+          "bloqueado": false,
+          "holguraFrente": 0,
+          "huecoInferior": 0
+        }
+      ]
+    }
+  ],
+  "distribuciones": [
+    {
+      "nombre": "Inicial",
+      "posiciones": {
+        "cama": {
+          "x": 280,
+          "y": 95,
+          "giro": 90
+        },
+        "mesilla": {
+          "x": 360,
+          "y": 197.5,
+          "giro": 90
+        },
+        "armario": {
+          "x": 220,
+          "y": 290,
+          "giro": 180
+        },
+        "escritorio": {
+          "x": 60,
+          "y": 30,
+          "giro": 0
+        },
+        "silla": {
+          "x": 60,
+          "y": 85,
+          "giro": 180
+        },
+        "alfombra": {
+          "x": 150,
+          "y": 200,
+          "giro": 0
+        }
+      }
+    }
+  ],
+  "notas": ""
+}

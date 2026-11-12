@@ -1,0 +1,425 @@
+{
+  "formato": "espacios3d",
+  "version": 2,
+  "nombre": "Casa de referencia",
+  "plantas": [
+    {
+      "id": "planta-baja",
+      "nombre": "Planta baja",
+      "nivel": 0,
+      "grosorExterior": 10,
+      "estancias": [
+        {
+          "id": "estancia",
+          "nombre": "Salón",
+          "contorno": [
+            [
+              0,
+              0
+            ],
+            [
+              450,
+              0
+            ],
+            [
+              450,
+              380
+            ],
+            [
+              0,
+              380
+            ]
+          ],
+          "altura": 250,
+          "huecos": [
+            {
+              "id": "ventana-salon",
+              "tipo": "ventana",
+              "muro": 0,
+              "desde": 100,
+              "ancho": 120,
+              "alto": 120,
+              "antepecho": 90
+            },
+            {
+              "id": "puerta-cocina",
+              "tipo": "puerta",
+              "muro": 1,
+              "desde": 40,
+              "ancho": 80,
+              "alto": 205,
+              "antepecho": 0,
+              "abre": "dentro",
+              "bisagra": "inicio"
+            },
+            {
+              "id": "paso-salon",
+              "tipo": "paso",
+              "muro": 2,
+              "desde": 300,
+              "ancho": 90,
+              "alto": 205,
+              "antepecho": 0
+            }
+          ],
+          "elementos": [
+            {
+              "id": "radiador",
+              "tipo": "radiador",
+              "forma": "adosado",
+              "muro": 0,
+              "desde": 300,
+              "ancho": 80,
+              "fondo": 10,
+              "alto": 60,
+              "elevacion": 15
+            }
+          ],
+          "suelo": {
+            "tipo": "parquet",
+            "color": "#b98a5a"
+          },
+          "paredes": "#f2e6d0",
+          "fotos": [
+            "fotos/salon.png"
+          ]
+        },
+        {
+          "id": "cocina",
+          "nombre": "Cocina",
+          "contorno": [
+            [
+              460,
+              0
+            ],
+            [
+              760,
+              0
+            ],
+            [
+              760,
+              380
+            ],
+            [
+              460,
+              380
+            ]
+          ],
+          "altura": 250,
+          "huecos": [],
+          "suelo": {
+            "tipo": "baldosa"
+          }
+        },
+        {
+          "id": "pasillo",
+          "nombre": "Pasillo",
+          "contorno": [
+            [
+              0,
+              390
+            ],
+            [
+              760,
+              390
+            ],
+            [
+              760,
+              510
+            ],
+            [
+              0,
+              510
+            ]
+          ],
+          "altura": 250,
+          "huecos": [
+            {
+              "id": "entrada",
+              "tipo": "puerta",
+              "muro": 3,
+              "desde": 20,
+              "ancho": 90,
+              "alto": 205,
+              "antepecho": 0,
+              "abre": "dentro",
+              "bisagra": "inicio"
+            }
+          ],
+          "elementos": [
+            {
+              "id": "enchufe",
+              "tipo": "enchufe",
+              "forma": "punto",
+              "muro": 0,
+              "desde": 300,
+              "altura": 30
+            }
+          ]
+        }
+      ],
+      "muebles": [
+        {
+          "id": "sofa",
+          "nombre": "Sofá",
+          "tipo": "sofa",
+          "ancho": 200,
+          "fondo": 90,
+          "alto": 85,
+          "x": 45,
+          "y": 200,
+          "giro": 270,
+          "elevacion": 0,
+          "color": "#7d8a7a",
+          "bloqueado": false,
+          "holguraFrente": 60,
+          "huecoInferior": 0
+        },
+        {
+          "id": "mesa",
+          "nombre": "Mesa",
+          "tipo": "mesa",
+          "ancho": 120,
+          "fondo": 80,
+          "alto": 75,
+          "x": 250,
+          "y": 200,
+          "giro": 0,
+          "elevacion": 0,
+          "color": "#b89a74",
+          "bloqueado": false,
+          "holguraFrente": 60,
+          "huecoInferior": 65,
+          "piezas": [
+            {
+              "forma": "caja",
+              "x": 0,
+              "y": 0,
+              "z": 71,
+              "ancho": 120,
+              "fondo": 80,
+              "alto": 4,
+              "giro": 0
+            },
+            {
+              "forma": "cilindro",
+              "x": -50,
+              "y": -30,
+              "z": 0,
+              "ancho": 8,
+              "fondo": 8,
+              "alto": 71,
+              "giro": 0
+            },
+            {
+              "forma": "cilindro",
+              "x": 50,
+              "y": 30,
+              "z": 0,
+              "ancho": 8,
+              "fondo": 8,
+              "alto": 71,
+              "giro": 0
+            }
+          ]
+        },
+        {
+          "id": "cuadro",
+          "nombre": "Cuadro",
+          "tipo": "cuadro",
+          "ancho": 60,
+          "fondo": 3,
+          "alto": 45,
+          "x": 255,
+          "y": 1.5,
+          "giro": 0,
+          "elevacion": 140,
+          "color": "#7a5c43",
+          "bloqueado": false,
+          "holguraFrente": 0,
+          "huecoInferior": 0
+        },
+        {
+          "id": "sillon",
+          "nombre": "Caja",
+          "tipo": "butaca",
+          "ancho": 50,
+          "fondo": 50,
+          "alto": 50,
+          "x": 380,
+          "y": 300,
+          "giro": 0,
+          "elevacion": 0,
+          "color": "#9aa3ab",
+          "bloqueado": false,
+          "holguraFrente": 0,
+          "huecoInferior": 0,
+          "modelo": {
+            "archivo": "modelos/sillon.glb",
+            "giro": 0,
+            "ajuste": "medidas"
+          }
+        }
+      ],
+      "fondos": [
+        {
+          "id": "plano",
+          "archivo": "planos/plano.png",
+          "anchoPx": 200,
+          "altoPx": 160,
+          "escala": 3.85,
+          "x": -5,
+          "y": -5,
+          "giro": 0,
+          "opacidad": 0.5
+        }
+      ],
+      "escaleras": [
+        {
+          "id": "escalera",
+          "forma": "L",
+          "ancho": 80,
+          "x": 700,
+          "y": 70,
+          "giro": 0,
+          "hasta": "p1",
+          "tramos": [
+            230,
+            120
+          ],
+          "gira": "derecha"
+        }
+      ]
+    },
+    {
+      "id": "p1",
+      "nombre": "Primera",
+      "nivel": 280,
+      "grosorExterior": 10,
+      "estancias": [
+        {
+          "id": "estancia-p1",
+          "nombre": "Salón",
+          "contorno": [
+            [
+              0,
+              0
+            ],
+            [
+              450,
+              0
+            ],
+            [
+              450,
+              380
+            ],
+            [
+              0,
+              380
+            ]
+          ],
+          "altura": 250,
+          "huecos": [
+            {
+              "id": "ventana-salon-p1",
+              "tipo": "ventana",
+              "muro": 0,
+              "desde": 100,
+              "ancho": 120,
+              "alto": 120,
+              "antepecho": 90
+            }
+          ],
+          "faldones": [
+            {
+              "muro": 0,
+              "alturaEnMuro": 150,
+              "alcance": 150
+            }
+          ]
+        },
+        {
+          "id": "cocina-p1",
+          "nombre": "Cocina",
+          "contorno": [
+            [
+              460,
+              0
+            ],
+            [
+              760,
+              0
+            ],
+            [
+              760,
+              380
+            ],
+            [
+              460,
+              380
+            ]
+          ],
+          "altura": 250,
+          "huecos": []
+        },
+        {
+          "id": "pasillo-p1",
+          "nombre": "Pasillo",
+          "contorno": [
+            [
+              0,
+              390
+            ],
+            [
+              760,
+              390
+            ],
+            [
+              760,
+              510
+            ],
+            [
+              0,
+              510
+            ]
+          ],
+          "altura": 250,
+          "huecos": []
+        }
+      ],
+      "muebles": []
+    }
+  ],
+  "distribuciones": [
+    {
+      "nombre": "Base",
+      "posiciones": {
+        "sofa": {
+          "x": 45,
+          "y": 200,
+          "giro": 270,
+          "planta": "planta-baja"
+        },
+        "mesa": {
+          "x": 250,
+          "y": 200,
+          "giro": 0,
+          "planta": "planta-baja"
+        },
+        "cuadro": {
+          "x": 255,
+          "y": 1.5,
+          "giro": 0,
+          "planta": "planta-baja"
+        },
+        "sillon": {
+          "x": 380,
+          "y": 300,
+          "giro": 0,
+          "planta": "planta-baja"
+        }
+      }
+    }
+  ],
+  "notas": ""
+}

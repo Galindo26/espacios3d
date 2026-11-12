@@ -1,0 +1,1027 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "espacios3d/espacio.schema.json",
+  "title": "Espacio de Espacios 3D (*.espacio.json), versión 2",
+  "description": "Medidas en cm y giros en grados. Planta con x a la derecha e y hacia abajo. Un espacio tiene plantas; cada planta, estancias (habitaciones) y muebles. El contorno de una estancia es la cara interior de sus muros; el muro i va del vértice i al i+1. (x, y) es el centro de la huella del mueble; con giro 0 su frente mira a +y; el giro es horario visto desde arriba. Los ids (plantas, estancias, huecos y muebles) son únicos en todo el archivo. Un mueble pertenece a la estancia que contiene su centro. Este esquema comprueba la estructura. El validador de la herramienta (node espacios3d.mjs validar) comprueba además lo que un esquema no puede: contornos simples y con área, estancias que no se solapan, ids únicos, nombres de distribución únicos, huecos que caben en su muro y no se pisan, antepecho + alto ≤ altura, huecoInferior < alto y que la planta de una posición existe. Los archivos de la versión 1 (una sola «estancia» y «muebles» en la raíz) los lee la herramienta y los convierte a esta versión al guardar.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "formato",
+    "version",
+    "plantas"
+  ],
+  "properties": {
+    "formato": {
+      "const": "espacios3d"
+    },
+    "version": {
+      "const": 2
+    },
+    "nombre": {
+      "type": "string",
+      "default": "Espacio sin nombre"
+    },
+    "plantas": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/planta"
+      }
+    },
+    "distribuciones": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "nombre",
+          "posiciones"
+        ],
+        "properties": {
+          "nombre": {
+            "type": "string"
+          },
+          "posiciones": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "x",
+                "y"
+              ],
+              "properties": {
+                "x": {
+                  "type": "number"
+                },
+                "y": {
+                  "type": "number"
+                },
+                "giro": {
+                  "type": "number",
+                  "default": 0
+                },
+                "planta": {
+                  "type": "string",
+                  "description": "Planta del mueble en esta distribución (sólo hace falta con varias plantas)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "notas": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"
+    },
+    "planta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "estancias"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "nombre": {
+          "type": "string",
+          "description": "Por defecto «Planta baja» en la primera"
+        },
+        "nivel": {
+          "type": "number",
+          "default": 0,
+          "description": "Altura del suelo de la planta en cm"
+        },
+        "grosorExterior": {
+          "type": "number",
+          "minimum": 0,
+          "default": 10,
+          "description": "Grosor de los muros exteriores de la planta"
+        },
+        "estancias": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/estancia"
+          }
+        },
+        "muebles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mueble"
+          },
+          "default": []
+        },
+        "fondos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fondo"
+          },
+          "description": "Planos o fotos de fondo para calcar (opcional)"
+        },
+        "escaleras": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/escalera"
+          },
+          "description": "Escaleras que suben desde esta planta a la inmediatamente superior"
+        }
+      }
+    },
+    "estancia": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "contorno"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "nombre": {
+          "type": "string",
+          "description": "Por defecto, su id"
+        },
+        "contorno": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "minItems": 2,
+            "maxItems": 2,
+            "items": false
+          }
+        },
+        "altura": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 250
+        },
+        "huecos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/hueco"
+          },
+          "default": []
+        },
+        "elementos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/elemento"
+          }
+        },
+        "faldones": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/faldon"
+          }
+        },
+        "circuloDeGiro": {
+          "type": "boolean",
+          "description": "comprobar que cabe un círculo de giro de 150 cm (silla de ruedas)"
+        },
+        "suelo": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tipo"
+          ],
+          "description": "acabado del suelo; sin él, liso",
+          "properties": {
+            "tipo": {
+              "enum": [
+                "liso",
+                "parquet",
+                "baldosa",
+                "moqueta"
+              ]
+            },
+            "color": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            }
+          }
+        },
+        "paredes": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "color de las paredes por dentro"
+        },
+        "fotos": {
+          "type": "array",
+          "uniqueItems": true,
+          "description": "fotos: rutas relativas a la carpeta del .espacio.json (fotos/…)",
+          "items": {
+            "type": "string",
+            "pattern": "^(?![a-zA-Z]:|[\\\\/~])(?!.*(^|/)\\.\\.(/|$))(?!.*:).*\\.([jJ][pP][eE]?[gG]|[pP][nN][gG]|[wW][eE][bB][pP])$"
+          }
+        }
+      }
+    },
+    "hueco": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "tipo",
+        "muro",
+        "desde",
+        "ancho"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "tipo": {
+          "enum": [
+            "puerta",
+            "ventana",
+            "paso"
+          ]
+        },
+        "muro": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Índice del muro: del vértice muro al muro+1"
+        },
+        "desde": {
+          "type": "number",
+          "minimum": 0,
+          "description": "cm desde el vértice inicial del muro hasta el borde del hueco"
+        },
+        "ancho": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "alto": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Por defecto 205 en puertas y pasos y 120 en ventanas"
+        },
+        "antepecho": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Sólo ventanas (por defecto 90)"
+        },
+        "abre": {
+          "enum": [
+            "dentro",
+            "fuera",
+            "corredera"
+          ],
+          "description": "Sólo puertas (por defecto dentro)"
+        },
+        "bisagra": {
+          "enum": [
+            "inicio",
+            "fin"
+          ],
+          "description": "Sólo puertas: extremo del hueco con la bisagra (por defecto inicio)"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "tipo": {
+                "const": "puerta"
+              }
+            }
+          },
+          "else": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "abre"
+                  ]
+                },
+                {
+                  "required": [
+                    "bisagra"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "tipo": {
+                "const": "ventana"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "antepecho": {
+                "const": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    "elemento": {
+      "description": "Elemento fijo de obra. Sin «alto», los exentos y adosados llegan hasta el techo.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "forma",
+            "x",
+            "y",
+            "ancho"
+          ],
+          "description": "En medio de la estancia: rectángulo (o círculo con redondo) centrado en (x, y)",
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/id"
+            },
+            "tipo": {
+              "type": "string",
+              "description": "Etiqueta: columna, pilar, radiador, chimenea, enchufe, interruptor, toma, escalon, viga u otra. radiador, enchufe/interruptor/toma y escalon tienen avisos propios"
+            },
+            "forma": {
+              "const": "exento"
+            },
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            },
+            "ancho": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "fondo": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Por defecto, igual al ancho"
+            },
+            "giro": {
+              "type": "number",
+              "default": 0
+            },
+            "redondo": {
+              "type": "boolean",
+              "default": false
+            },
+            "alto": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "elevacion": {
+              "type": "number",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "forma",
+            "muro",
+            "desde",
+            "ancho",
+            "fondo"
+          ],
+          "description": "Contra un muro, hacia dentro",
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/id"
+            },
+            "tipo": {
+              "type": "string",
+              "description": "Etiqueta: columna, pilar, radiador, chimenea, enchufe, interruptor, toma, escalon, viga u otra. radiador, enchufe/interruptor/toma y escalon tienen avisos propios"
+            },
+            "forma": {
+              "const": "adosado"
+            },
+            "muro": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "desde": {
+              "type": "number",
+              "minimum": 0
+            },
+            "ancho": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "fondo": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "alto": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "elevacion": {
+              "type": "number",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "forma",
+            "muro",
+            "desde"
+          ],
+          "description": "Un punto en un muro (enchufe, interruptor, toma)",
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/id"
+            },
+            "tipo": {
+              "type": "string",
+              "description": "Etiqueta: columna, pilar, radiador, chimenea, enchufe, interruptor, toma, escalon, viga u otra. radiador, enchufe/interruptor/toma y escalon tienen avisos propios"
+            },
+            "forma": {
+              "const": "punto"
+            },
+            "muro": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "desde": {
+              "type": "number",
+              "minimum": 0
+            },
+            "altura": {
+              "type": "number",
+              "minimum": 0,
+              "default": 30
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "forma",
+            "de",
+            "a"
+          ],
+          "description": "Viga bajo el techo de un punto a otro",
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/id"
+            },
+            "tipo": {
+              "type": "string",
+              "description": "Etiqueta: columna, pilar, radiador, chimenea, enchufe, interruptor, toma, escalon, viga u otra. radiador, enchufe/interruptor/toma y escalon tienen avisos propios"
+            },
+            "forma": {
+              "const": "viga"
+            },
+            "de": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "minItems": 2,
+              "maxItems": 2,
+              "items": false
+            },
+            "a": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "minItems": 2,
+              "maxItems": 2,
+              "items": false
+            },
+            "ancho": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "default": 20
+            },
+            "canto": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "default": 25,
+              "description": "Lo que baja desde el techo"
+            }
+          }
+        }
+      ]
+    },
+    "faldon": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "muro",
+        "alturaEnMuro",
+        "alcance"
+      ],
+      "description": "Techo inclinado: junto al muro está a alturaEnMuro y sube en línea recta hasta la altura de la estancia a «alcance» cm del muro",
+      "properties": {
+        "muro": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "alturaEnMuro": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "alcance": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "mueble": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "ancho",
+        "fondo",
+        "alto",
+        "x",
+        "y"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "nombre": {
+          "type": "string",
+          "description": "Por defecto, la etiqueta del tipo"
+        },
+        "tipo": {
+          "type": "string",
+          "default": "caja",
+          "description": "cama, armario, escritorio, silla, mesilla, estanteria, comoda, sofa, mesa o caja; otro valor se trata como caja"
+        },
+        "ancho": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "A lo largo del frente"
+        },
+        "fondo": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Del frente a la trasera"
+        },
+        "alto": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "giro": {
+          "type": "number",
+          "default": 0
+        },
+        "elevacion": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0,
+          "description": "Altura de la base sobre el suelo (muebles colgados)"
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "bloqueado": {
+          "type": "boolean",
+          "default": false
+        },
+        "holguraFrente": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Espacio libre que necesita delante; por defecto según el tipo"
+        },
+        "huecoInferior": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Altura libre por debajo; lo que mida menos cabe debajo"
+        },
+        "piezas": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/pieza"
+          },
+          "description": "Forma hecha de piezas, en coordenadas del mueble; sin piezas se usa la forma genérica del tipo"
+        },
+        "modelo": {
+          "$ref": "#/$defs/modelo"
+        },
+        "fotos": {
+          "type": "array",
+          "uniqueItems": true,
+          "description": "fotos: rutas relativas a la carpeta del .espacio.json (fotos/…)",
+          "items": {
+            "type": "string",
+            "pattern": "^(?![a-zA-Z]:|[\\\\/~])(?!.*(^|/)\\.\\.(/|$))(?!.*:).*\\.([jJ][pP][eE]?[gG]|[pP][nN][gG]|[wW][eE][bB][pP])$"
+          }
+        }
+      }
+    },
+    "fondo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "archivo",
+        "anchoPx",
+        "altoPx"
+      ],
+      "description": "Imagen de fondo: el píxel (0, 0), esquina de arriba a la izquierda, cae en (x, y) cm; cada píxel mide «escala» cm; «giro» en grados, horario, alrededor de esa esquina.",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "archivo": {
+          "type": "string",
+          "pattern": "^(?![a-zA-Z]:|[\\\\/~])(?!.*(^|/)\\.\\.(/|$))(?!.*//)[^\\\\]+$",
+          "description": "Ruta relativa a la carpeta del .espacio.json, con «/» (p. ej. planos/piso.png); sin «..» ni rutas absolutas"
+        },
+        "anchoPx": {
+          "type": "integer",
+          "exclusiveMinimum": 0
+        },
+        "altoPx": {
+          "type": "integer",
+          "exclusiveMinimum": 0
+        },
+        "escala": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 1,
+          "description": "cm por píxel"
+        },
+        "x": {
+          "type": "number",
+          "default": 0
+        },
+        "y": {
+          "type": "number",
+          "default": 0
+        },
+        "giro": {
+          "type": "number",
+          "default": 0
+        },
+        "opacidad": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5
+        }
+      }
+    },
+    "pieza": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "forma",
+        "ancho"
+      ],
+      "description": "Origen en el centro de la huella del mueble, a ras de su base; x a lo largo del ancho, y hacia el frente, z hacia arriba. Tiene que caber dentro del mueble. Esfera y cilindro usan ancho como diámetro; la cuña sube de 0 en el frente a «alto» detrás.",
+      "properties": {
+        "forma": {
+          "enum": [
+            "caja",
+            "cilindro",
+            "esfera",
+            "cuna"
+          ]
+        },
+        "x": {
+          "type": "number",
+          "default": 0
+        },
+        "y": {
+          "type": "number",
+          "default": 0
+        },
+        "z": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0
+        },
+        "ancho": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "fondo": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "alto": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "giro": {
+          "type": "number",
+          "default": 0
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        }
+      }
+    },
+    "modelo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "archivo"
+      ],
+      "description": "Modelo .glb propio en la carpeta de trabajo (ruta relativa al .espacio.json). Si falta, se ve la forma genérica; las colisiones usan siempre las medidas del mueble. En el .glb del CLI no se incrusta: el nodo del mueble lleva extras.modelo y sus piezas son la forma de reserva (extras.piezasDeReserva).",
+      "properties": {
+        "archivo": {
+          "type": "string",
+          "pattern": "^(?![a-zA-Z]:|[\\\\/~])(?!.*(^|/)\\.\\.(/|$))(?!.*//)[^\\\\]+\\.[gG][lL][bB]$"
+        },
+        "giro": {
+          "type": "number",
+          "multipleOf": 90,
+          "default": 0,
+          "description": "Giro del modelo dentro del mueble: 0, 90, 180 o 270"
+        },
+        "ajuste": {
+          "enum": [
+            "medidas",
+            "modelo"
+          ],
+          "default": "medidas"
+        }
+      }
+    },
+    "escalera": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "x",
+        "y",
+        "ancho",
+        "hasta"
+      ],
+      "description": "(x, y): centro del borde del pie. Con giro 0 el primer tramo sube hacia +y (giro horario, como los muebles). recta: largo. L: tramos [l1, l2] y gira (mano de quien sube: derecha = horario; con giro 0, derecha es hacia −x). U: tramos, gira y ojo. caracol: gira, poste (diámetro, 20) y vuelta (grados de pie a llegada, 360); ancho es el del peldaño, del poste a la barandilla, y el centro queda a la mano de giro. peldanos = contrahuellas; por defecto round(altura / 18) (round(altura / 21) en la caracol). El hueco del forjado de arriba es la parte de la huella sin 200 cm libres bajo el techo de abajo.",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "forma": {
+          "enum": [
+            "recta",
+            "L",
+            "U",
+            "caracol"
+          ],
+          "default": "recta"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "ancho": {
+          "type": "number",
+          "minimum": 60
+        },
+        "giro": {
+          "type": "number",
+          "default": 0
+        },
+        "hasta": {
+          "type": "string",
+          "description": "id de la planta inmediatamente superior"
+        },
+        "peldanos": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "largo": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "tramos": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "gira": {
+          "enum": [
+            "derecha",
+            "izquierda"
+          ],
+          "default": "derecha"
+        },
+        "ojo": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0
+        },
+        "poste": {
+          "type": "number",
+          "minimum": 8,
+          "maximum": 60,
+          "default": 20,
+          "description": "caracol: diámetro del poste central (cm)"
+        },
+        "vuelta": {
+          "type": "number",
+          "minimum": 90,
+          "maximum": 360,
+          "default": 360,
+          "description": "caracol: grados que gira de pie a llegada"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "forma": {
+                "const": "recta"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "largo"
+            ],
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "tramos"
+                  ]
+                },
+                {
+                  "required": [
+                    "gira"
+                  ]
+                },
+                {
+                  "required": [
+                    "ojo"
+                  ]
+                },
+                {
+                  "required": [
+                    "poste"
+                  ]
+                },
+                {
+                  "required": [
+                    "vuelta"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "forma": {
+                "enum": [
+                  "L",
+                  "U"
+                ]
+              }
+            },
+            "required": [
+              "forma"
+            ]
+          },
+          "then": {
+            "required": [
+              "tramos"
+            ],
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "largo"
+                  ]
+                },
+                {
+                  "required": [
+                    "poste"
+                  ]
+                },
+                {
+                  "required": [
+                    "vuelta"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "forma": {
+                "const": "L"
+              }
+            },
+            "required": [
+              "forma"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "ojo"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "forma": {
+                "const": "caracol"
+              }
+            },
+            "required": [
+              "forma"
+            ]
+          },
+          "then": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "largo"
+                  ]
+                },
+                {
+                  "required": [
+                    "tramos"
+                  ]
+                },
+                {
+                  "required": [
+                    "ojo"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

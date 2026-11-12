@@ -1,0 +1,7 @@
+node_modules/
+build/
+dist/
+salidas/
+*.log
+__pycache__/
+tests/aceptacion/resultados/

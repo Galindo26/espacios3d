@@ -1,0 +1,25 @@
+{
+  "ok": false,
+  "incidencias": [
+    {
+      "gravedad": "error",
+      "regla": "paso",
+      "mensaje": "\u00abCaja\u00bb (a) tapa el paso de \u00abp\u00bb (deja libres 60 cm delante)",
+      "muebles": [
+        "a"
+      ],
+      "huecos": [
+        "p"
+      ]
+    },
+    {
+      "gravedad": "aviso",
+      "regla": "holgura",
+      "mensaje": "\u00abCaja\u00bb (cosa) invade los 70 cm libres que necesita \u00abArmario\u00bb (arm) delante",
+      "muebles": [
+        "arm",
+        "cosa"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "formato": "espacios3d",
+  "version": 1,
+  "nombre": "Caso distribuciones",
+  "estancia": {
+    "contorno": [
+      [
+        0,
+        0
+      ],
+      [
+        400,
+        0
+      ],
+      [
+        400,
+        300
+      ],
+      [
+        0,
+        300
+      ]
+    ]
+  },
+  "muebles": [
+    {
+      "id": "a",
+      "tipo": "caja",
+      "ancho": 50,
+      "fondo": 50,
+      "alto": 80,
+      "x": 100,
+      "y": 100
+    },
+    {
+      "id": "b",
+      "tipo": "caja",
+      "ancho": 50,
+      "fondo": 50,
+      "alto": 80,
+      "x": 200,
+      "y": 100,
+      "bloqueado": true
+    }
+  ],
+  "distribuciones": [
+    {
+      "nombre": "Una",
+      "posiciones": {
+        "a": {
+          "x": 120,
+          "y": 100,
+          "giro": 90
+        },
+        "b": {
+          "x": 200,
+          "y": 100,
+          "giro": 0
+        }
+      }
+    }
+  ],
+  "notas": "caso de referencia"
+}

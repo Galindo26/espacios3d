@@ -1,0 +1,41 @@
+{
+  "ok": false,
+  "incidencias": [
+    {
+      "gravedad": "error",
+      "regla": "fuera",
+      "mensaje": "\u00abArmario\u00bb (armario) se sale de la estancia o atraviesa un muro",
+      "muebles": [
+        "armario"
+      ]
+    },
+    {
+      "gravedad": "aviso",
+      "regla": "silla-bajo",
+      "mensaje": "\u00abSilla\u00bb (silla) entra bajo \u00abEscritorio\u00bb (escritorio); el respaldo es m\u00e1s alto que el hueco (65 cm): comprueba que cabe como la dejas",
+      "muebles": [
+        "silla",
+        "escritorio"
+      ]
+    },
+    {
+      "gravedad": "error",
+      "regla": "puerta",
+      "mensaje": "\u00abArmario\u00bb (armario) est\u00e1 en el barrido de la puerta \u00abpuerta\u00bb: no se podr\u00eda abrir del todo",
+      "muebles": [
+        "armario"
+      ],
+      "huecos": [
+        "puerta"
+      ]
+    },
+    {
+      "gravedad": "aviso",
+      "regla": "holgura",
+      "mensaje": "delante de \u00abArmario\u00bb (armario) no caben los 70 cm libres que necesita: hay un muro",
+      "muebles": [
+        "armario"
+      ]
+    }
+  ]
+}

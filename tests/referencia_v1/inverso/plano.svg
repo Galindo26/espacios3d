@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -50 500 400" width="1000" height="800" font-family="sans-serif">
+<title>Caso inverso</title>
+<rect x="-50" y="-50" width="500" height="400" fill="#fbfaf7"/>
+<polygon points="-10,-10 -10,310 410,310 410,-10" fill="#3b4046"/>
+<polygon points="0,0 0,300 400,300 400,0" fill="#efe8dc"/>
+<polygon points="0,40 0,120 -10.5,120 -10.5,40" fill="#efe8dc"/>
+<g><title>a «Caja» 50x50x80 cm</title>
+<polygon points="5,55 55,55 55,105 5,105" fill="#9aa3ab" fill-opacity="0.9" stroke="#c0392b" stroke-width="2"/>
+<line x1="5" y1="105" x2="55" y2="105" stroke="#2b2f33" stroke-width="3"/>
+<text x="30" y="80" font-size="9.3" text-anchor="middle" dominant-baseline="middle" fill="#2b2f33">Caja</text>
+</g>
+<g><title>arm «Armario» 100x60x200 cm</title>
+<polygon points="400,100 400,200 340,200 340,100" fill="#a8876a" fill-opacity="0.9" stroke="#d48a00" stroke-width="2"/>
+<line x1="340" y1="100" x2="340" y2="200" stroke="#2b2f33" stroke-width="3"/>
+<text x="370" y="150" font-size="9.3" text-anchor="middle" dominant-baseline="middle" fill="#2b2f33">Armario</text>
+</g>
+<g><title>cosa «Caja» 50x50x80 cm</title>
+<polygon points="275,125 325,125 325,175 275,175" fill="#9aa3ab" fill-opacity="0.9" stroke="#d48a00" stroke-width="2"/>
+<line x1="275" y1="175" x2="325" y2="175" stroke="#2b2f33" stroke-width="3"/>
+<text x="300" y="150" font-size="9.3" text-anchor="middle" dominant-baseline="middle" fill="#2b2f33">Caja</text>
+</g>
+<text x="-19.3" y="150" font-size="9.3" text-anchor="middle" dominant-baseline="middle" fill="#5b6670">300 cm</text>
+<text x="200" y="319.3" font-size="9.3" text-anchor="middle" dominant-baseline="middle" fill="#5b6670">400 cm</text>
+<text x="419.3" y="150" font-size="9.3" text-anchor="middle" dominant-baseline="middle" fill="#5b6670">300 cm</text>
+<text x="200" y="-19.3" font-size="9.3" text-anchor="middle" dominant-baseline="middle" fill="#5b6670">400 cm</text>
+</svg>

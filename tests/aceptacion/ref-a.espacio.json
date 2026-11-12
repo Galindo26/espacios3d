@@ -1,0 +1,279 @@
+{
+  "formato": "espacios3d",
+  "version": 2,
+  "nombre": "Piso A",
+  "plantas": [
+    {
+      "id": "pb",
+      "nombre": "Planta baja",
+      "nivel": 0,
+      "grosorExterior": 20,
+      "estancias": [
+        {
+          "id": "salon",
+          "nombre": "Salón",
+          "contorno": [
+            [
+              0,
+              0
+            ],
+            [
+              480,
+              0
+            ],
+            [
+              480,
+              360
+            ],
+            [
+              0,
+              360
+            ]
+          ],
+          "altura": 250,
+          "huecos": [
+            {
+              "id": "v-salon",
+              "tipo": "ventana",
+              "muro": 0,
+              "desde": 150,
+              "ancho": 160,
+              "alto": 120,
+              "antepecho": 90
+            },
+            {
+              "id": "p-salon-pasillo",
+              "tipo": "puerta",
+              "muro": 1,
+              "desde": 230,
+              "ancho": 80,
+              "alto": 205,
+              "antepecho": 0,
+              "abre": "dentro",
+              "bisagra": "inicio"
+            }
+          ]
+        },
+        {
+          "id": "cocina",
+          "nombre": "Cocina",
+          "contorno": [
+            [
+              490,
+              0
+            ],
+            [
+              790,
+              0
+            ],
+            [
+              790,
+              200
+            ],
+            [
+              490,
+              200
+            ]
+          ],
+          "altura": 250,
+          "huecos": [
+            {
+              "id": "v-cocina",
+              "tipo": "ventana",
+              "muro": 0,
+              "desde": 100,
+              "ancho": 100,
+              "alto": 120,
+              "antepecho": 90
+            },
+            {
+              "id": "p-cocina",
+              "tipo": "puerta",
+              "muro": 2,
+              "desde": 100,
+              "ancho": 80,
+              "alto": 205,
+              "antepecho": 0,
+              "abre": "dentro",
+              "bisagra": "inicio"
+            }
+          ]
+        },
+        {
+          "id": "pasillo",
+          "nombre": "Pasillo",
+          "contorno": [
+            [
+              490,
+              210
+            ],
+            [
+              790,
+              210
+            ],
+            [
+              790,
+              320
+            ],
+            [
+              490,
+              320
+            ]
+          ],
+          "altura": 250,
+          "huecos": [
+            {
+              "id": "entrada",
+              "tipo": "puerta",
+              "muro": 1,
+              "desde": 15,
+              "ancho": 90,
+              "alto": 205,
+              "antepecho": 0,
+              "abre": "dentro",
+              "bisagra": "inicio"
+            }
+          ]
+        },
+        {
+          "id": "dormitorio",
+          "nombre": "Dormitorio",
+          "contorno": [
+            [
+              490,
+              330
+            ],
+            [
+              790,
+              330
+            ],
+            [
+              790,
+              620
+            ],
+            [
+              490,
+              620
+            ]
+          ],
+          "altura": 250,
+          "huecos": [
+            {
+              "id": "p-dormitorio",
+              "tipo": "puerta",
+              "muro": 0,
+              "desde": 200,
+              "ancho": 80,
+              "alto": 205,
+              "antepecho": 0,
+              "abre": "dentro",
+              "bisagra": "inicio"
+            },
+            {
+              "id": "v-dormitorio",
+              "tipo": "ventana",
+              "muro": 1,
+              "desde": 100,
+              "ancho": 120,
+              "alto": 120,
+              "antepecho": 90
+            }
+          ]
+        },
+        {
+          "id": "bano",
+          "nombre": "Baño",
+          "contorno": [
+            [
+              0,
+              370
+            ],
+            [
+              240,
+              370
+            ],
+            [
+              240,
+              620
+            ],
+            [
+              0,
+              620
+            ]
+          ],
+          "altura": 250,
+          "huecos": [
+            {
+              "id": "p-bano",
+              "tipo": "puerta",
+              "muro": 0,
+              "desde": 80,
+              "ancho": 70,
+              "alto": 205,
+              "antepecho": 0,
+              "abre": "dentro",
+              "bisagra": "inicio"
+            },
+            {
+              "id": "v-bano",
+              "tipo": "ventana",
+              "muro": 3,
+              "desde": 80,
+              "ancho": 60,
+              "alto": 120,
+              "antepecho": 90
+            }
+          ]
+        },
+        {
+          "id": "estudio",
+          "nombre": "Estudio",
+          "contorno": [
+            [
+              250,
+              370
+            ],
+            [
+              480,
+              370
+            ],
+            [
+              480,
+              620
+            ],
+            [
+              250,
+              620
+            ]
+          ],
+          "altura": 250,
+          "huecos": [
+            {
+              "id": "p-estudio",
+              "tipo": "puerta",
+              "muro": 0,
+              "desde": 70,
+              "ancho": 80,
+              "alto": 205,
+              "antepecho": 0,
+              "abre": "dentro",
+              "bisagra": "inicio"
+            },
+            {
+              "id": "v-estudio",
+              "tipo": "ventana",
+              "muro": 2,
+              "desde": 60,
+              "ancho": 100,
+              "alto": 120,
+              "antepecho": 90
+            }
+          ]
+        }
+      ],
+      "muebles": []
+    }
+  ],
+  "distribuciones": [],
+  "notas": ""
+}

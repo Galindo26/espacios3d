@@ -1,0 +1,5 @@
+; Proyecto mínimo para comprobar en Godot el .glb con colisiones de Espacios 3D (tests/motores).
+config_version=5
+
+[application]
+config/name="Comprobar Espacios 3D"

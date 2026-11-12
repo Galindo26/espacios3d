@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -50 500 400" width="1000" height="800" font-family="sans-serif">
+<title>Caso distribuciones</title>
+<rect x="-50" y="-50" width="500" height="400" fill="#fbfaf7"/>
+<polygon points="-10,-10 410,-10 410,310 -10,310" fill="#3b4046"/>
+<polygon points="0,0 400,0 400,300 0,300" fill="#efe8dc"/>
+<g><title>a «Caja» 50x50x80 cm</title>
+<polygon points="75,75 125,75 125,125 75,125" fill="#9aa3ab" fill-opacity="0.9" stroke="#2b2f33" stroke-width="0.8"/>
+<line x1="75" y1="125" x2="125" y2="125" stroke="#2b2f33" stroke-width="3"/>
+<text x="100" y="100" font-size="9.3" text-anchor="middle" dominant-baseline="middle" fill="#2b2f33">Caja</text>
+</g>
+<g><title>b «Caja» 50x50x80 cm</title>
+<polygon points="175,75 225,75 225,125 175,125" fill="#9aa3ab" fill-opacity="0.9" stroke="#2b2f33" stroke-width="0.8"/>
+<line x1="175" y1="125" x2="225" y2="125" stroke="#2b2f33" stroke-width="3"/>
+<text x="200" y="100" font-size="9.3" text-anchor="middle" dominant-baseline="middle" fill="#2b2f33">Caja</text>
+</g>
+<text x="200" y="-19.3" font-size="9.3" text-anchor="middle" dominant-baseline="middle" fill="#5b6670">400 cm</text>
+<text x="419.3" y="150" font-size="9.3" text-anchor="middle" dominant-baseline="middle" fill="#5b6670">300 cm</text>
+<text x="200" y="319.3" font-size="9.3" text-anchor="middle" dominant-baseline="middle" fill="#5b6670">400 cm</text>
+<text x="-19.3" y="150" font-size="9.3" text-anchor="middle" dominant-baseline="middle" fill="#5b6670">300 cm</text>
+</svg>

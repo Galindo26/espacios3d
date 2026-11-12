@@ -1,0 +1,24 @@
+{
+  "ok": false,
+  "incidencias": [
+    {
+      "gravedad": "error",
+      "regla": "altura",
+      "mensaje": "\u00abCaja\u00bb (alto) supera la altura del techo (260 > 240 cm)",
+      "muebles": [
+        "alto"
+      ]
+    },
+    {
+      "gravedad": "error",
+      "regla": "puerta",
+      "mensaje": "\u00abCaja\u00bb (m) est\u00e1 en el barrido de la puerta \u00abp\u00bb: no se podr\u00eda abrir del todo",
+      "muebles": [
+        "m"
+      ],
+      "huecos": [
+        "p"
+      ]
+    }
+  ]
+}

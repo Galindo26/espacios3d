@@ -1,0 +1,65 @@
+{
+  "formato": "espacios3d",
+  "version": 1,
+  "nombre": "Caso inverso",
+  "estancia": {
+    "contorno": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        300
+      ],
+      [
+        400,
+        300
+      ],
+      [
+        400,
+        0
+      ]
+    ],
+    "huecos": [
+      {
+        "id": "p",
+        "tipo": "puerta",
+        "muro": 0,
+        "desde": 40,
+        "ancho": 80,
+        "abre": "fuera"
+      }
+    ]
+  },
+  "muebles": [
+    {
+      "id": "a",
+      "tipo": "caja",
+      "ancho": 50,
+      "fondo": 50,
+      "alto": 80,
+      "x": 30,
+      "y": 80
+    },
+    {
+      "id": "arm",
+      "tipo": "armario",
+      "ancho": 100,
+      "fondo": 60,
+      "alto": 200,
+      "x": 370,
+      "y": 150,
+      "giro": 90
+    },
+    {
+      "id": "cosa",
+      "tipo": "caja",
+      "ancho": 50,
+      "fondo": 50,
+      "alto": 80,
+      "x": 300,
+      "y": 150
+    }
+  ]
+}
