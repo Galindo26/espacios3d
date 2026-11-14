@@ -1,7 +1,7 @@
 // R2-6: muebles hechos de piezas, modelos .glb propios (opcionales) y formas genéricas del núcleo.
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { describe, test } from 'node:test';
+import { after, describe, test } from 'node:test';
 import * as N from '../../build/core.mjs';
 
 const validador = createRequire(import.meta.url)('gltf-validator');
@@ -128,6 +128,8 @@ describe('piezas y modelo por el lote y el CLI', async () => {
   const { fileURLToPath } = await import('node:url');
   const CLI = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'dist', 'Espacios3D', 'espacios3d.mjs');
   const dir = mkdtempSync(join(tmpdir(), 'espacios3d-r26-'));
+  // Se limpia al acabar el grupo, también si una prueba falla antes.
+  after(() => rmSync(dir, { recursive: true, force: true }));
   const cli = (...a) => spawnSync(process.execPath, [CLI, ...a], { encoding: 'utf8' });
   const PIEZAS = [{ forma: 'caja', ancho: 200, fondo: 90, alto: 42 }, { forma: 'cuna', y: -30, z: 42, ancho: 200, fondo: 30, alto: 43 }];
 
@@ -170,7 +172,6 @@ describe('piezas y modelo por el lote y el CLI', async () => {
     r = cli('editar', f, '--id', 'sofa', '--piezas', '[{forma:caja}]');
     assert.equal(r.status, 3, 'error de uso');
     assert.match(r.stderr, /--piezas no es JSON válido/);
-    rmSync(dir, { recursive: true, force: true });
   });
 });
 

@@ -219,8 +219,9 @@ describe('MCP', () => {
     const id = siguiente++;
     proc.stdin.write(`${JSON.stringify({ jsonrpc: '2.0', id, method, params })}\n`);
     return new Promise((res, rej) => {
-      pendientes.set(id, res);
-      setTimeout(() => rej(new Error(`sin respuesta a ${method}`)), 20000);
+      // El temporizador se retira al llegar la respuesta: no queda vivo 20 s.
+      const t = setTimeout(() => rej(new Error(`sin respuesta a ${method}`)), 20000);
+      pendientes.set(id, (m) => (clearTimeout(t), res(m)));
     });
   };
   const llamar = (name, args) => pedir('tools/call', { name, arguments: args }).then((r) => r.result);
@@ -441,5 +442,44 @@ describe('ronda 6, página y pruebas: la puntuación de la aceptación', () => {
     assert.notEqual(r.codigo, 0);
     assert.equal(r.informe.ok, false);
     assert.deepEqual(r.informe.comprobaciones.find((c) => c.nombre === 'plantas'), { nombre: 'plantas', ok: false, detalle: { referencia: 1, resultado: 2 } });
+  });
+});
+
+describe('ronda 6, aplazados del núcleo', () => {
+  test('imán: con un muro casi paralelo, el mueble se pega a la pared donde está, no donde empieza el muro', () => {
+    // La pared de arriba baja 7,85 cm en 500 (menos de 1°): junto a su final queda en y ≈ 7,1–7,9.
+    const e = N.validarOLanzar({ formato: 'espacios3d', version: 2, nombre: 'x', plantas: [{ id: 'pb', estancias: [{ id: 's', contorno: [[0, 0], [500, 7.85], [500, 300], [0, 300]], altura: 250, huecos: [] }],
+      muebles: [{ id: 'm', tipo: 'caja', x: 250, y: 150, ancho: 50, fondo: 40, alto: 80, giro: 0 }] }] });
+    const pared = (x) => (7.85 * x) / 500;
+    const m = e.plantas[0].muebles[0];
+    // Su trasera (y − 20) a 9: a poco más de 1 cm de la pared. Antes se «pegaba» a y = 0, 7 cm dentro del muro.
+    let r = N.aplicarIman(e, { ...m, x: 460, y: 29 }, 10);
+    assert.ok(r.y - 20 >= pared(485) - 0.05, `no entra en la pared (trasera en ${r.y - 20}, pared en ${pared(485)})`);
+    assert.ok(r.y - 20 <= pared(485) + 0.5, `y queda pegado a ella (trasera en ${r.y - 20})`);
+    // A 12 del arranque del muro pero a unos 4,5 de la pared: está dentro del umbral y se pega.
+    r = N.aplicarIman(e, { ...m, x: 460, y: 32 }, 10);
+    assert.ok(Math.abs(r.y - 20 - pared(485)) <= 0.5, `se pega desde 4,5 cm (trasera en ${r.y - 20})`);
+    // Y a más de 10 cm de la pared, no.
+    r = N.aplicarIman(e, { ...m, x: 460, y: 20 + pared(485) + 11 }, 10);
+    assert.equal(r.y, 20 + pared(485) + 11);
+  });
+
+  test('escalera en L: la estancia que la contiene no es la que ocupa su rincón interior', () => {
+    const e = N.validarOLanzar({ formato: 'espacios3d', version: 2, nombre: 'x', plantas: [
+      { id: 'pb', nivel: 0, estancias: [{ id: 's', contorno: rect(0, 0, 900, 900), altura: 250, huecos: [] }], muebles: [],
+        escaleras: [{ id: 'esc', forma: 'L', x: 300, y: 200, ancho: 90, tramos: [300, 300], gira: 'derecha', hasta: 'p1' }] },
+      { id: 'p1', nivel: 280, estancias: [{ id: 't', contorno: rect(0, 0, 900, 900), altura: 250, huecos: [] }], muebles: [] },
+    ] });
+    const pb = e.plantas[0];
+    const geo = N.geometriaDe(e, pb, pb.escaleras[0]);
+    // La media de los vértices de la huella cae en el rincón interior de la L, fuera de la escalera.
+    const v = geo.huella.flat();
+    const c = [v.reduce((s, q) => s + q[0], 0) / v.length, v.reduce((s, q) => s + q[1], 0) / v.length];
+    assert.ok(!geo.huella.some((r) => N.puntoEnPoligono(c, r)), 'el caso es el del rincón');
+    // Un aseo en ese rincón (va primero en la lista) y el distribuidor alrededor.
+    const aseo = { id: 'aseo', contorno: rect(c[0] - 15, c[1] - 15, c[0] + 15, c[1] + 15), altura: 220, huecos: [] };
+    const planta = { ...pb, estancias: [aseo, pb.estancias[0]] };
+    assert.equal(N.estanciaDeEscalera(planta, pb.escaleras[0], geo).id, 's');
+    assert.equal(N.techoEscalera(planta, pb.escaleras[0], geo), 250);
   });
 });

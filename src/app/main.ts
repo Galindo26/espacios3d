@@ -1678,7 +1678,10 @@ class App {
         if (k === 'enter' && t.closest('form')?.querySelector('button[type="submit"]')) return;
         // Intro confirma el campo y Esc lo deja como estaba; los dos devuelven el teclado a la vista.
         if (k === 'enter' || k === 'escape') {
-          if (k === 'escape' && esCampoDeTexto(t) && t.dataset.original !== undefined) (t as HTMLInputElement).value = t.dataset.original;
+          if (k === 'escape' && esCampoDeTexto(t) && t.dataset.original !== undefined) {
+            (t as HTMLInputElement).value = t.dataset.original;
+            this.paneles.campoRestaurado(t);
+          }
           t.blur();
           canvas.focus();
           ev.preventDefault();

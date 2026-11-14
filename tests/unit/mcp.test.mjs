@@ -75,12 +75,12 @@ class Cliente {
   }
   /** Envía una petición y espera su respuesta (por id). */
   pedir(id, method, params) {
-    const ya = this.sueltos.findIndex((m) => m.id === id);
+    // Antes de crear la espera: si no, su temporizador rechazaría más tarde una promesa que nadie mira.
+    if (this.sueltos.some((m) => m.id === id)) throw new Error('id repetido en la prueba');
     const p = new Promise((resolver, rechazar) => {
       const t = setTimeout(() => rechazar(new Error(`sin respuesta a ${method} (${id})`)), 5000);
       this.esperas.push({ id, resolver: (m) => (clearTimeout(t), resolver(m)) });
     });
-    if (ya >= 0) throw new Error('id repetido en la prueba');
     this.escribir(JSON.stringify({ jsonrpc: '2.0', id, method, ...(params === undefined ? {} : { params }) }));
     return p;
   }

@@ -174,7 +174,8 @@ def rutas_fuera(transcripcion: Path, raiz: Path) -> list:
                 continue
             texto = json.dumps(c.get('input'), ensure_ascii=False).replace(chr(92) * 2, '/').replace(chr(92), '/').lower()
             for r in patron.findall(texto):
-                if not r.startswith(dentro):
+                # Dentro es la carpeta o algo bajo ella: una hermana con el mismo prefijo no lo es.
+                if r != dentro and not r.startswith(dentro + '/'):
                     fuera.add(r.rstrip('/.,') or r)
     return sorted(fuera)
 
@@ -187,6 +188,7 @@ def main() -> int:
         prueba, carpeta = sys.argv[2], Path(sys.argv[3])
         p = PRUEBAS[prueba]
         salida = AQUI / 'resultados' / prueba
+        salida.mkdir(parents=True, exist_ok=True)
         registro = {'prueba': prueba, 'agente': p['agente'], 'encargo': p['encargo'], 'carpeta': str(carpeta), 'recuperado': True,
                     'nota': 'el agente terminó; el ejecutor falló al copiar el resultado (permisos del sandbox de Codex) y se puntúa después, sin repetir'}
         puntuar(p, salida, carpeta / p['salida'], registro)

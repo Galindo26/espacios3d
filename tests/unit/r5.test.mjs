@@ -331,9 +331,10 @@ describe('abrir por MCP', () => {
     const pedir = (method, params = {}) =>
       new Promise((res, rej) => {
         const n = ++id;
-        respuestas.set(n, res);
+        // El temporizador se retira al llegar la respuesta: no queda vivo 20 s.
+        const t = setTimeout(() => rej(new Error(`sin respuesta a ${method}`)), 20000);
+        respuestas.set(n, (m) => (clearTimeout(t), res(m)));
         proc.stdin.write(`${JSON.stringify({ jsonrpc: '2.0', id: n, method, params })}\n`);
-        setTimeout(() => rej(new Error(`sin respuesta a ${method}`)), 20000);
       });
     try {
       await pedir('initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'prueba', version: '0' } });

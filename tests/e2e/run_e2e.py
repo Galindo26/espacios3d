@@ -314,8 +314,47 @@ def ronda6_pagina(contexto, errores: list[str]) -> None:
     reescribir("dos.espacio.json", "e.plantas.pop();", "window.__ESPACIOS3D__.espacio().plantas.length === 1")
     q.wait_for_timeout(200)
     comprobar(e3d("recorrido().activo") and e3d("recorrido().planta") == "pb", f"si un agente quita la planta en la que se está, se pasa a la que queda («{e3d('recorrido().planta')}»)")
+
+    # 4 (segunda parte). Salir y volver a entrar en el mismo fotograma no deja dos bucles andando a la vez.
+    q.evaluate("() => { for (let i = 0; i < 2; i++) window.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', bubbles: true, cancelable: true })); }")
+    comprobar(e3d("recorrido().activo"), "tras salir y entrar seguidos se sigue recorriendo")
+    q.evaluate("window.__ESPACIOS3D__.colocarRecorrido(100, 200, 0)")
+    q.keyboard.down("w")
+    q.wait_for_timeout(600)
+    q.keyboard.up("w")
+    q.wait_for_timeout(100)
+    andado = e3d("recorrido().pos")[0] - 100
+    comprobar(40 < andado < 125, f"y se anda a la velocidad de siempre, no al doble ({round(andado)} cm en 0,6 s; a 140 cm/s son 84)")
     q.keyboard.press("Escape")
+
+    # 11. Esc en «Paredes una a una» deshace el campo y también el aviso de descuadre y los «cambios sin aplicar».
+    q.click("#paredes summary")
+    celda = q.locator("#tabla-paredes tr").nth(0).locator('[data-campo="longitud"]')
+    celda.fill("650")
+    comprobar("No cierran" in q.inner_text("#descuadre"), "una pared cambiada sin aplicar descuadra la tabla")
+    celda.press("Escape")
+    comprobar(celda.input_value() == "500" and q.inner_text("#descuadre") == "Las paredes cierran.", f"Esc la deja como estaba y el aviso vuelve a decir que cierran («{q.inner_text('#descuadre')}»)")
+    poner(q, "#e-ancho", "480")
+    comprobar(contorno()[1] == [480, 0] and "descartado" not in q.inner_text("#descuadre"), f"y un cambio posterior no avisa de cambios descartados que no había («{q.inner_text('#descuadre')}»)")
     ctx.close()
+
+
+def ronda6_aceptacion() -> None:
+    """Ronda 6: el ejecutor de la aceptación con agentes no da por buena una carpeta hermana."""
+    print("Ronda 6: ejecutor de la aceptación")
+    sys.path.insert(0, str(RAIZ / "tests" / "aceptacion"))
+    try:
+        import ejecutar
+    finally:
+        sys.path.pop(0)
+    with tempfile.TemporaryDirectory() as tmp:
+        raiz = Path(tmp) / "e3d-prueba"
+        raiz.mkdir()
+        dentro, hermana = (raiz / "casa.espacio.json").as_posix(), (Path(tmp) / "e3d-prueba_otra" / "f.txt").as_posix()
+        t = Path(tmp) / "transcripcion.jsonl"
+        t.write_text("\n".join(json.dumps({"type": "assistant", "message": {"content": [{"type": "tool_use", "input": {"file_path": r}}]}}) for r in (dentro, hermana)), encoding="utf-8")
+        fuera = ejecutar.rutas_fuera(t, raiz)
+        comprobar(fuera == [hermana.lower()], f"una ruta en una carpeta hermana con el mismo prefijo cuenta como de fuera, y la de dentro no ({fuera})")
 
 
 def main() -> int:
@@ -665,7 +704,7 @@ def main() -> int:
         try:
             ph.wait_for_function("window.__ESPACIOS3D__.espacio().plantas[0].muebles.some(m => m.id === 'del-agente')", timeout=6000)
         except Exception:
-            print("  DIAG página:", [m["id"] for m in espacio(ph)["plantas"][0]["muebles"]], "archivo:", [m["id"] for m in (archivo(ph) or {}).get("muebles", [])],
+            print("  DIAG página:", [m["id"] for m in espacio(ph)["plantas"][0]["muebles"]], "archivo:", [m["id"] for m in ((archivo(ph) or {}).get("plantas") or [{}])[0].get("muebles", [])],
                   "pendiente:", ph.evaluate("window.__ESPACIOS3D__.pendiente()"), "estado:", ph.locator("#estado-guardado").inner_text(),
                   "aviso:", ph.locator("#aviso").inner_text(), "contorno:", espacio(ph)["plantas"][0]["estancias"][0]["contorno"])
         ph.wait_for_timeout(800)
@@ -2077,6 +2116,7 @@ def main() -> int:
         shutil.rmtree(r5, ignore_errors=True)
 
         ronda6_pagina(contexto, errores)
+        ronda6_aceptacion()
 
         print("Red y consola")
         comprobar(not peticiones, f"cero peticiones de red: {peticiones[:5]}")

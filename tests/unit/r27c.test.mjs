@@ -23,8 +23,9 @@ function pedir(method, params = {}) {
   const id = siguiente++;
   proc.stdin.write(`${JSON.stringify({ jsonrpc: '2.0', id, method, params })}\n`);
   return new Promise((res, rej) => {
-    pendientes.set(id, res);
-    setTimeout(() => rej(new Error(`sin respuesta a ${method}`)), 20000);
+    // El temporizador se retira al llegar la respuesta: no queda vivo 20 s.
+    const t = setTimeout(() => rej(new Error(`sin respuesta a ${method}`)), 20000);
+    pendientes.set(id, (m) => (clearTimeout(t), res(m)));
   });
 }
 const llamar = (name, args) => pedir('tools/call', { name, arguments: args }).then((r) => r.result);

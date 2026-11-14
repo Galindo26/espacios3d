@@ -76,13 +76,18 @@ export function aplicarIman(espacio: Espacio, mueble: Mueble, umbral: number, pl
       if (ls === 0) continue;
       const ts: Punto = [ds[0] / ls, ds[1] / ls];
       if (Math.abs(t[0] * ts[1] - t[1] * ts[0]) > PARALELO) continue;
-      const d = dot(sub(s.a, a), n); // distancia firmada del borde a la línea objetivo
-      if (Math.abs(d) > umbral) continue;
       // Solape lateral entre el borde y el segmento objetivo.
       const p0 = dot(sub(s.a, a), t);
       const p1 = dot(sub(s.b, a), t);
       const lo = Math.max(0, Math.min(p0, p1));
       const hi = Math.min(largo, Math.max(p0, p1));
+      // Distancia firmada del borde a la línea objetivo, medida donde se solapan y no donde empieza el
+      // segmento: con un muro largo que se desvía menos de 1°, su arranque puede quedar a varios cm.
+      // De los dos extremos del solape, la menor: al encajar, el borde toca la línea sin atravesarla.
+      const ns: Punto = [ts[1], -ts[0]];
+      const hasta = (k: number): number => dot(sub(s.a, [a[0] + t[0] * k, a[1] + t[1] * k]), ns) / dot(n, ns);
+      const d = Math.min(hasta(Math.min(largo, lo)), hasta(Math.max(0, hi)));
+      if (Math.abs(d) > umbral) continue;
       const contacto = hi - lo > 0.5;
       let coste: number;
       if (contacto) coste = Math.abs(d);

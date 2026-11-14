@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "node scripts/build.mjs",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.app.json",
     "test": "node scripts/build.mjs && node --test \"tests/unit/*.test.mjs\"",
     "e2e": "node scripts/build.mjs && python tests/e2e/run_e2e.py",
     "check": "npm run typecheck && npm test && npm run e2e",

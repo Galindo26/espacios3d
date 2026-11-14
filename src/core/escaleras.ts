@@ -253,10 +253,15 @@ export function geometriaEscalera(esc: Escalera, altura: number, techo = Infinit
   return geo;
 }
 
-/** Centro de la huella (media de sus vértices): cae dentro de la escalera. */
+/**
+ * Un punto del centro de la escalera y dentro de ella: la media de los vértices de la huella o, si cae
+ * fuera (en una L, en su rincón interior, que puede ser de otra estancia), el centro de la meseta.
+ */
 function centroHuella(geo: GeometriaEscalera): Punto {
-  const v = geo.huella.flat();
-  return [v.reduce((s, q) => s + q[0], 0) / v.length, v.reduce((s, q) => s + q[1], 0) / v.length];
+  const media = (v: Punto[]): Punto => [v.reduce((s, q) => s + q[0], 0) / v.length, v.reduce((s, q) => s + q[1], 0) / v.length];
+  const c = media(geo.huella.flat());
+  if (geo.huella.some((r) => puntoEnPoligono(c, r))) return c;
+  return media(geo.meseta?.rect ?? geo.huella[0]!);
 }
 
 /** Estancia de abajo que contiene la escalera (por el centro de su huella; si no, la del pie). */

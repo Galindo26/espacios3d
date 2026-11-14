@@ -291,6 +291,21 @@ export class Paneles {
   }
 
   /** Marca la tabla como aplicada (tras aplicar con éxito). */
+  /**
+   * Tras deshacer con Esc un campo de «Paredes una a una» (cambiar el valor desde aquí no avisa a la
+   * tabla): se recalcula el descuadre y si quedan medidas sin aplicar.
+   */
+  campoRestaurado(campo: HTMLElement): void {
+    if (!this.espacio || !campo.closest('#tabla-paredes')) return;
+    this.pintarDescuadre();
+    const lista = (ts: Tramo[]): string => JSON.stringify(ts.map((x) => [x.longitud, x.giro]));
+    try {
+      this.tablaSucia = lista(this.leerTabla()) !== lista(tramosDesdeContorno(estanciaDe(this.espacio, this.estanciaSel).estancia.contorno));
+    } catch {
+      this.tablaSucia = true;
+    }
+  }
+
   tablaAplicada(): void {
     this.tablaSucia = false;
     this.firmaContorno = '';
