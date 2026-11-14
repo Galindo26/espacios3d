@@ -158,6 +158,166 @@ def nueva_pagina(ctx, errores: list[str]) -> Page:
     return page
 
 
+def ronda6_pagina(contexto, errores: list[str]) -> None:
+    """Ronda 6, pasada de la página: teclado, modos, recorrido y fichas (revisión independiente)."""
+    print("Ronda 6: teclado, modos, recorrido y fichas")
+    ctx = contexto(viewport={"width": 1440, "height": 900}, device_scale_factor=1)
+    q = nueva_pagina(ctx, errores)
+    e3d = lambda expr: q.evaluate(f"window.__ESPACIOS3D__.{expr}")
+    contorno = lambda: espacio(q)["plantas"][0]["estancias"][0]["contorno"]
+
+    def abrir(nombre: str, casa: dict, titulo: str) -> None:
+        q.evaluate("([n, t]) => { window.__agente(n, t); window.__disco.siguienteAbrir = n; }", [nombre, json.dumps(casa)])
+        q.click("#b-abrir")
+        q.wait_for_function("n => window.__ESPACIOS3D__.espacio().nombre === n", arg=titulo, timeout=5000)
+
+    def reescribir(nombre: str, cambio: str, hecho: str) -> None:
+        """El agente cambia el archivo vinculado (partiendo de lo guardado) y se espera a que la página lo lea."""
+        q.wait_for_function("!window.__ESPACIOS3D__.pendiente()", timeout=5000)
+        q.evaluate("([n, f]) => { const e = JSON.parse(window.__disco.archivos[n].texto); new Function('e', f)(e); window.__agente(n, JSON.stringify(e)); }", [nombre, cambio])
+        q.wait_for_function(hecho, timeout=8000)
+
+    def tecla_en(selector: str, tecla: str) -> bool:
+        """Una tecla con el foco en un control (aunque esté oculto). Devuelve si la página la anuló."""
+        return q.evaluate(
+            "([s, k]) => { const ev = new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }); document.querySelector(s).dispatchEvent(ev); return ev.defaultPrevented; }",
+            [selector, tecla],
+        )
+
+    # 6. Un error en una medida de la estancia deja los campos como el modelo; un campo vacío no es 0.
+    poner(q, "#e-alto", "-10")
+    comprobar(q.locator("#e-error").is_visible() and q.input_value("#e-alto") == "250", f"tras un alto rechazado, el campo vuelve a 250 (queda «{q.input_value('#e-alto')}»)")
+    poner(q, "#e-ancho", "400")
+    comprobar(contorno()[1] == [400, 0] and not q.locator("#e-error").is_visible(), "y el ancho siguiente se aplica sin arrastrar el alto rechazado")
+    poner(q, "#e-ancho", "")
+    comprobar(q.input_value("#e-ancho") == "400" and not q.locator("#e-error").is_visible(), f"vaciar el ancho lo deja como estaba, sin error (queda «{q.input_value('#e-ancho')}»)")
+    poner(q, "#e-ancho", "350")
+
+    # 9 y 10. Con el foco en un deslizador o una casilla, o con la foto ampliada, las teclas no son del mueble.
+    q.click('#catalogo button[data-tipo="cama"]')
+    antes = mueble(q, "cama")
+    anulada = tecla_en("#f-opacidad", "ArrowLeft")
+    comprobar(mueble(q, "cama")["x"] == antes["x"] and not anulada, "con el foco en el deslizador de opacidad, ← es del deslizador y no mueve el mueble")
+    tecla_en("#f-opacidad", "Delete")
+    tecla_en("#m-bloqueado", "Delete")
+    comprobar("cama" in ids(q), "Supr con el foco en un deslizador o una casilla no borra el mueble")
+    q.evaluate("document.querySelector('#dialogo-foto').showModal()")
+    q.keyboard.press("Delete")
+    q.keyboard.press("r")
+    comprobar("cama" in ids(q) and mueble(q, "cama")["giro"] == antes["giro"], "con la foto ampliada abierta, Supr y R no actúan sobre el mueble de detrás")
+    q.evaluate("document.querySelector('#dialogo-foto').close()")
+
+    # 2. Recorrer, Medir y Dibujar se cierran entre sí.
+    q.evaluate("document.querySelector('#b-dibujar').click()")
+    comprobar(q.get_attribute("#b-dibujar", "aria-pressed") == "true", "«Dibujar» queda activo")
+    q.keyboard.press("p")
+    comprobar(e3d("recorrido().activo") and q.get_attribute("#b-dibujar", "aria-pressed") == "false", "entrar a recorrer cierra «Dibujar»")
+    q.evaluate("document.querySelector('#b-medir').click()")
+    comprobar(not e3d("recorrido().activo") and q.get_attribute("#b-medir", "aria-pressed") == "true", "«Medir» mientras se recorre sale del recorrido")
+    q.keyboard.press("p")
+    comprobar(e3d("recorrido().activo") and q.get_attribute("#b-medir", "aria-pressed") == "false", "y entrar a recorrer cierra «Medir»")
+    q.evaluate("document.querySelector('#b-dibujar').click()")
+    comprobar(not e3d("recorrido().activo") and q.get_attribute("#b-dibujar", "aria-pressed") == "true", "«Dibujar» mientras se recorre sale del recorrido")
+    q.keyboard.press("Escape")
+
+    # 1. Recorriendo, Ctrl+S guarda (no es la S de andar hacia atrás) y Ctrl+D no duplica.
+    q.keyboard.press("p")
+    pos = e3d("recorrido().pos")
+    q.keyboard.down("Control")
+    q.keyboard.down("s")
+    q.wait_for_timeout(400)
+    q.keyboard.up("s")
+    q.keyboard.up("Control")
+    try:
+        q.wait_for_function(f"!!window.__disco.archivos['{ARCHIVO}']", timeout=3000)
+        guardado = True
+    except Exception:
+        guardado = False
+    comprobar(guardado, "recorriendo, Ctrl+S guarda")
+    comprobar(e3d("recorrido().pos") == pos, f"y no hace andar hacia atrás ({pos} → {e3d('recorrido().pos')})")
+    q.keyboard.press("Control+d")
+    comprobar(len(ids(q)) == 1, "Ctrl+D no duplica mientras se recorre")
+
+    # 4. El giro con el ratón no se queda enganchado al perder el foco, al cancelarse el puntero ni al salir.
+    caja = q.locator("#lienzo canvas").bounding_box()
+    cx, cy = caja["x"] + caja["width"] / 2, caja["y"] + caja["height"] / 2
+    # Como en un navegador que no concede el ratón (Pointer Lock): se mira arrastrando.
+    q.evaluate("() => { document.querySelector('#lienzo canvas').requestPointerLock = () => Promise.reject(new Error('sin Pointer Lock')); }")
+    def suelto_tras(accion: str) -> bool:
+        q.mouse.move(cx, cy)
+        q.mouse.down()
+        q.wait_for_timeout(100)
+        capturado = q.evaluate("!!document.pointerLockElement")
+        q.evaluate(accion)
+        rumbo = e3d("recorrido().rumbo")
+        q.mouse.move(cx + 90, cy, steps=4)
+        igual = e3d("recorrido().rumbo") == rumbo
+        q.mouse.up()
+        return igual and not capturado
+    comprobar(suelto_tras("window.dispatchEvent(new Event('blur'))"), "al perder el foco la ventana, mover el ratón ya no gira la mirada")
+    comprobar(suelto_tras("window.dispatchEvent(new PointerEvent('pointercancel', { pointerId: 1 }))"), "ni tras cancelarse el puntero")
+    q.mouse.move(cx, cy)
+    q.mouse.down()
+    q.keyboard.press("Escape")
+    q.keyboard.press("p")
+    rumbo = e3d("recorrido().rumbo")
+    q.mouse.move(cx + 90, cy, steps=4)
+    comprobar(e3d("recorrido().activo") and e3d("recorrido().rumbo") == rumbo, "ni al salir y volver a entrar sin haber soltado")
+    q.mouse.up()
+    q.keyboard.press("Escape")
+
+    # 5. «¿Entra por la puerta?» se recalcula al llevar el mueble a otra estancia de la misma planta.
+    rect = lambda x0, y0, x1, y1: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]]
+    piso = {"formato": "espacios3d", "version": 2, "nombre": "Piso", "plantas": [{"id": "p0", "nombre": "Baja", "nivel": 0, "grosorExterior": 15, "estancias": [
+        {"id": "salon", "nombre": "Salón", "contorno": rect(0, 0, 400, 300), "altura": 250, "huecos": [
+            {"id": "ext", "tipo": "puerta", "muro": 0, "desde": 50, "ancho": 90, "alto": 205},
+            {"id": "p_bano", "tipo": "puerta", "muro": 1, "desde": 50, "ancho": 62, "alto": 203}]},
+        {"id": "bano", "nombre": "Baño", "contorno": rect(415, 0, 615, 300), "altura": 250, "huecos": []},
+    ], "muebles": [{"id": "arm", "tipo": "armario", "nombre": "Armario", "x": 150, "y": 150, "ancho": 70, "fondo": 70, "alto": 80, "giro": 0}]}]}
+    abrir("piso.espacio.json", piso, "Piso")
+    q.mouse.click(*pantalla(q, 150, 150, 40))
+    q.wait_for_function("window.__ESPACIOS3D__.seleccion() === 'arm'", timeout=3000)
+    comprobar(q.inner_text("#m-entra").startswith("Entra por la puerta"), f"el armario entra hasta el salón («{q.inner_text('#m-entra')}»)")
+    poner(q, "#m-x", "500")
+    comprobar(mueble(q, "arm")["x"] == 500 and q.inner_text("#m-entra").startswith("No entra"), f"y al llevarlo al baño la ficha dice que no entra («{q.inner_text('#m-entra')}»)")
+
+    # 12. «Mover pared» no actúa sobre una estancia que cambió con el diálogo abierto.
+    q.keyboard.press("Escape")
+    q.evaluate("document.querySelector('#b-mover-pared').click()")
+    q.wait_for_selector("#dialogo[open]")
+    reescribir("piso.espacio.json", "e.plantas[0].estancias[0].contorno = [[0, 0], [400, 0], [400, 280], [0, 280]];",
+               "window.__ESPACIOS3D__.espacio().plantas[0].estancias[0].contorno[2][1] === 280")
+    q.click("#dialogo-aceptar")
+    q.wait_for_timeout(300)
+    comprobar(contorno() == rect(0, 0, 400, 280) and "cambió" in q.inner_text("#aviso"), f"mover pared avisa de que la estancia cambió y no la toca ({contorno()}; «{q.inner_text('#aviso')[:80]}»)")
+    if q.locator("#dialogo[open]").count():
+        q.keyboard.press("Escape")
+
+    # 3. Recorriendo, si desaparece la escalera que se pisa o la planta en la que se está, se vuelve a pisar suelo.
+    casa = {"formato": "espacios3d", "version": 2, "nombre": "Dos plantas", "plantas": [
+        {"id": "pb", "nivel": 0, "estancias": [{"id": "s", "contorno": rect(0, 0, 500, 400), "altura": 250, "huecos": []}], "muebles": [],
+         "escaleras": [{"id": "esc", "x": 185, "y": 240, "ancho": 150, "largo": 280, "hasta": "p1"}]},
+        {"id": "p1", "nivel": 280, "estancias": [{"id": "t", "contorno": rect(0, 0, 500, 400), "altura": 250, "huecos": []}], "muebles": []},
+    ]}
+    abrir("dos.espacio.json", casa, "Dos plantas")
+    q.click("#b-recorrer")
+    q.evaluate("window.__ESPACIOS3D__.colocarRecorrido(185, 240, 270)")
+    comprobar(e3d("recorrido().escalera") == "esc", "se está en la escalera")
+    reescribir("dos.espacio.json", "delete e.plantas[0].escaleras;", "!window.__ESPACIOS3D__.espacio().plantas[0].escaleras")
+    q.wait_for_timeout(200)
+    comprobar(e3d("recorrido().activo") and e3d("recorrido().escalera") is None, "si un agente quita la escalera que se pisa, se deja de estar en ella")
+    q.keyboard.press("Escape")
+    q.click('#lista-plantas button[data-planta="p1"]')
+    q.wait_for_function("window.__ESPACIOS3D__.plantaActiva() === 'p1'", timeout=3000)
+    q.click("#b-recorrer")
+    comprobar(e3d("recorrido().planta") == "p1", "se recorre la planta de arriba")
+    reescribir("dos.espacio.json", "e.plantas.pop();", "window.__ESPACIOS3D__.espacio().plantas.length === 1")
+    q.wait_for_timeout(200)
+    comprobar(e3d("recorrido().activo") and e3d("recorrido().planta") == "pb", f"si un agente quita la planta en la que se está, se pasa a la que queda («{e3d('recorrido().planta')}»)")
+    q.keyboard.press("Escape")
+    ctx.close()
+
+
 def main() -> int:
     if not HTML.exists():
         print(f"No existe {HTML}; ejecuta antes node scripts/build.mjs")
@@ -1915,6 +2075,8 @@ def main() -> int:
         for c in contextos_r5:
             c.close()
         shutil.rmtree(r5, ignore_errors=True)
+
+        ronda6_pagina(contexto, errores)
 
         print("Red y consola")
         comprobar(not peticiones, f"cero peticiones de red: {peticiones[:5]}")

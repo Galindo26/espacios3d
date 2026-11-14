@@ -39,7 +39,9 @@ describe('booleanas robustas (N1)', () => {
     for (let i = 0; i < 2000; i++) {
       const [a, b] = contiguas(r, 0);
       const res = N.validar(v2(a, b));
-      if (res.ok) assert.doesNotThrow(() => N.modeloPlanta(N.planta(res.espacio)), `caso ${i}`);
+      // Todos son válidos: si validar los rechazara por otra causa, la masa de muros se quedaría sin probar.
+      assert.ok(res.ok, `caso ${i}: ${(res.errores ?? []).join('; ')}`);
+      assert.doesNotThrow(() => N.modeloPlanta(N.planta(res.espacio)), `caso ${i}`);
     }
   });
 });
@@ -50,7 +52,8 @@ describe('solape con la tolerancia lineal (N2)', () => {
     let malos = 0;
     for (let i = 0; i < 2000; i++) {
       const [a, b] = contiguas(r, 0.1);
-      if (/se solapan/.test((N.validar(v2(a, b)).errores ?? []).join())) malos++;
+      const res = N.validar(v2(a, b));
+      if (!res.ok) malos++;
     }
     assert.equal(malos, 0);
   });

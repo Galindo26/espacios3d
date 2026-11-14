@@ -85,6 +85,8 @@ export class Paneles {
     // Estancia: se aplica al confirmar (Intro o salir del campo).
     for (const id of ['e-ancho', 'e-largo']) {
       $in(id).addEventListener('change', () => {
+        // Un campo vacío no es 0: se deja como estaba.
+        if (!$in(id).value.trim()) return this.pintarEstancia($in('editar-esquinas').checked);
         const n = (k: string): number => Number($in(k).value);
         acciones.estancia(n('e-ancho'), n('e-largo'), n('e-alto'));
       });
@@ -473,7 +475,8 @@ export class Paneles {
   private textoEntrada(id: string, m: { ancho: number; fondo: number; alto: number }): string {
     const e = this.espacio;
     if (!e) return '';
-    const firma = JSON.stringify([id, m.ancho, m.fondo, m.alto, e.plantas.map((p) => [p.estancias, p.escaleras ?? null, p.muebles.find((x) => x.id === id) ? [p.id] : null])]);
+    // También su posición y su giro: deciden en qué estancia está, y por tanto por qué puertas pasa.
+    const firma = JSON.stringify([id, m.ancho, m.fondo, m.alto, e.plantas.map((p) => [p.estancias, p.escaleras ?? null, p.muebles.filter((x) => x.id === id).map((x) => [p.id, x.x, x.y, x.giro])])]);
     if (firma === this.firmaEntrada) return this.textoEntradaCache;
     this.firmaEntrada = firma;
     let r: ReturnType<typeof entradaMueble>;
@@ -505,6 +508,14 @@ export class Paneles {
         return li;
       }),
     );
+  }
+
+  /** Tras un cambio rechazado: los campos de esa parte vuelven a mostrar lo que hay en el espacio. */
+  restaurar(id: 'e-error' | 'm-error' | 'h-error'): void {
+    if (!this.espacio) return;
+    if (id === 'e-error') this.pintarEstancia($in('editar-esquinas').checked);
+    else if (id === 'h-error') this.pintarHuecos();
+    else this.pintarFicha();
   }
 
   mostrarError(id: 'e-error' | 'm-error' | 'h-error', mensaje: string | null): void {

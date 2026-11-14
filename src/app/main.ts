@@ -213,7 +213,10 @@ class App {
       cmPorPixel: () => this.cmPorPixel(),
       usarLeido: async (l) => void (await this.usarLeido(l)),
       usarDeCarpeta: (c, ruta) => this.usarDeCarpeta(c, ruta),
-      alEmpezarModo: () => this.cinta?.salir(),
+      alEmpezarModo: () => {
+        this.cinta?.salir();
+        this.recorrido?.salir();
+      },
     });
     this.recorrido = new Recorrido({
       esp: () => this.esp,
@@ -222,6 +225,10 @@ class App {
       ponerVista: (v) => this.ponerVista(v),
       aviso: (t) => this.aviso(t),
       cambiarPlanta: (id) => this.pasarDePlantaRecorriendo(id),
+      alEntrar: () => {
+        this.cinta?.salir();
+        this.calco?.cancelar();
+      },
     });
     this.plantas = new PanelPlantas({
       esp: () => this.esp,
@@ -231,7 +238,10 @@ class App {
       confirmar: (t, x, a) => this.confirmar(t, x, a),
       pedir: (t, n, a, leer) => this.dialogo(t, n, a, true).then((ok) => (ok ? leer() : null)),
     });
-    this.cinta = new Cinta({ esp: () => this.esp, escena: this.escena, cmPorPixel: () => this.cmPorPixel(), aviso: (t) => this.aviso(t), alEntrar: () => this.calco?.cancelar() });
+    this.cinta = new Cinta({ esp: () => this.esp, escena: this.escena, cmPorPixel: () => this.cmPorPixel(), aviso: (t) => this.aviso(t), alEntrar: () => {
+      this.calco?.cancelar();
+      this.recorrido?.salir();
+    } });
     this.fotos = new Fotos({
       esp: () => this.esp,
       aplicar: (e) => this.estado.aplicar(e),
@@ -352,6 +362,9 @@ class App {
     ayuda.textContent = 'Positivo hacia fuera (la estancia crece) y negativo hacia dentro. Si la pared da a otra estancia, el tabique se mueve entero: una crece lo que la otra encoge. Las paredes se numeran como en el plano.';
     const ok = await this.dialogo(`Mover una pared de «${est.nombre}»`, [fila('Pared', sel), fila('Distancia', d, 'cm'), ayuda], 'Mover pared', true);
     if (!ok) return;
+    // Si mientras se decidía cambió la estancia (un agente), las paredes de la lista ya no son las suyas.
+    const ahora = this.esp.plantas.flatMap((p) => p.estancias).find((x) => x.id === est.id);
+    if (!ahora || JSON.stringify(ahora.contorno) !== JSON.stringify(est.contorno)) return this.aviso('La estancia cambió mientras decidías: vuelve a abrir «Mover pared».');
     const distancia = Number(d.value.replace(',', '.'));
     if (!Number.isFinite(distancia) || distancia === 0) return this.aviso('Indica cuántos cm se mueve la pared.');
     try {
@@ -570,7 +583,8 @@ class App {
       this.paneles.mostrarError(campoError, null);
     } catch (e) {
       this.paneles.mostrarError(campoError, mensajeDe(e));
-      this.paneles.pintarFicha();
+      // Los campos vuelven a decir lo que hay, no el valor rechazado.
+      this.paneles.restaurar(campoError);
     }
   }
 
@@ -1609,7 +1623,8 @@ class App {
   private conectarTeclado(): void {
     const canvas = this.escena.renderer.domElement;
     window.addEventListener('keydown', (ev) => {
-      if (($('dialogo') as HTMLDialogElement).open) return;
+      // Con un diálogo abierto (también la foto ampliada) las teclas son suyas.
+      if (document.querySelector('dialog[open]')) return;
       const k = ev.key.toLowerCase();
       const ctrl = ev.ctrlKey || ev.metaKey;
       // Calibrando o dibujando: Intro, Retroceso y Esc son del modo (fuera de los campos de texto).
@@ -1656,7 +1671,8 @@ class App {
         return;
       }
       const t = ev.target as HTMLElement;
-      const enSelector = t instanceof HTMLSelectElement;
+      // Un deslizador se maneja con las flechas, como un selector.
+      const enSelector = t instanceof HTMLSelectElement || (t instanceof HTMLInputElement && t.type === 'range');
       if (esCampoDeTexto(t) || enSelector) {
         // En un formulario con botón de enviar (guardar distribución), Intro lo envía.
         if (k === 'enter' && t.closest('form')?.querySelector('button[type="submit"]')) return;
@@ -1673,10 +1689,15 @@ class App {
       }
       if (ctrl && k === 'z' && !ev.shiftKey) this.historial('deshacer');
       else if (ctrl && (k === 'y' || (k === 'z' && ev.shiftKey))) this.historial('rehacer');
-      else if (ctrl && k === 'd') this.duplicar();
+      else if (ctrl && k === 'd') {
+        // Mientras se recorre no se editan muebles con el teclado.
+        if (!this.recorrido?.activo) this.duplicar();
+      }
       else if (ctrl) return;
       else if (k === 'r') this.girar(ev.shiftKey ? 90 : 15);
       else if (k === 'delete' || k === 'backspace') {
+        // Con el foco en una casilla o un deslizador, borrar no es quitar lo elegido en la vista.
+        if (t instanceof HTMLInputElement) return;
         if (this.edicion.editando && this.edicion.vertice !== null) {
           const v = this.edicion.vertice;
           this.intentar('e-error', () => {

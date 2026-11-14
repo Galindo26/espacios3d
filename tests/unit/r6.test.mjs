@@ -420,3 +420,26 @@ describe('geometría', () => {
     assert.deepEqual(ext[1].map((v) => Math.round(v * 100) / 100), [1015, -15]);
   });
 });
+
+describe('ronda 6, página y pruebas: la puntuación de la aceptación', () => {
+  const PUNTUAR = join(dirname(fileURLToPath(import.meta.url)), '..', 'aceptacion', 'puntuar.mjs');
+  const REF = join(dirname(PUNTUAR), 'ref-a.espacio.json');
+  const puntuar = (res) => {
+    const r = spawnSync(process.execPath, [PUNTUAR, REF, res, '--modo', 'cotas'], { encoding: 'utf8' });
+    return { codigo: r.status, informe: JSON.parse(r.stdout) };
+  };
+  test('8: una planta de más no pasa aunque la referencia tenga una sola', () => {
+    const ref = JSON.parse(readFileSync(REF, 'utf8'));
+    assert.equal(ref.plantas.length, 1);
+    assert.equal(puntuar(REF).codigo, 0, 'la referencia contra sí misma pasa');
+    const res = structuredClone(ref);
+    res.plantas.push({ id: 'inventada', nombre: 'Inventada', nivel: 300, estancias: [{ id: 'inventada-1', contorno: [[0, 0], [300, 0], [300, 300], [0, 300]] }], muebles: [] });
+    N.validarOLanzar(res);
+    const f = join(tmp, 'planta-de-mas.espacio.json');
+    writeFileSync(f, JSON.stringify(res));
+    const r = puntuar(f);
+    assert.notEqual(r.codigo, 0);
+    assert.equal(r.informe.ok, false);
+    assert.deepEqual(r.informe.comprobaciones.find((c) => c.nombre === 'plantas'), { nombre: 'plantas', ok: false, detalle: { referencia: 1, resultado: 2 } });
+  });
+});

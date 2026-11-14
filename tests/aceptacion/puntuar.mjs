@@ -40,7 +40,8 @@ const porNivel = (e) => [...e.plantas].sort((a, b) => (a.nivel ?? 0) - (b.nivel 
 const plantasRef = porNivel(ref);
 const plantasRes = porNivel(res);
 const varias = plantasRef.length > 1;
-if (varias) comprobar('plantas', plantasRes.length === plantasRef.length, { referencia: plantasRef.length, resultado: plantasRes.length });
+// También con una referencia de una planta: las plantas de más no se dan por buenas (revisión independiente, ronda 6).
+if (varias || plantasRes.length !== plantasRef.length) comprobar('plantas', plantasRes.length === plantasRef.length, { referencia: plantasRef.length, resultado: plantasRes.length });
 const caja = (ps) => N.cajaContorno(ps.flatMap((s) => s.contorno));
 // Alineación por la caja de la planta de abajo; la misma para todas (comparten el origen x, y).
 const cr = caja(plantasRef[0].estancias);

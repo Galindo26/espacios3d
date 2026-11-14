@@ -164,13 +164,15 @@ describe('revisión independiente: paso libre sin falsos avisos', () => {
 describe('revisión independiente: círculo de giro y exterior', () => {
   test('6: el círculo de giro no cae sobre una escalera', () => {
     const e = N.validarOLanzar({ formato: 'espacios3d', version: 2, nombre: 'x', plantas: [
-      { id: 'pb', nivel: 0, estancias: [{ id: 's', contorno: rect(0, 0, 400, 400), altura: 250, huecos: [], circuloDeGiro: true }], muebles: [],
+      { id: 'pb', nivel: 0, estancias: [{ id: 's', contorno: rect(0, 0, 500, 400), altura: 250, huecos: [], circuloDeGiro: true }], muebles: [],
         escaleras: [{ id: 'esc', x: 185, y: 100, ancho: 150, largo: 280, hasta: 'p1' }] },
       { id: 'p1', nivel: 280, estancias: [{ id: 't', contorno: rect(0, 0, 400, 400), altura: 250, huecos: [] }], muebles: [] },
     ] });
     const c = N.circuloDeGiro(e.plantas[0], e.plantas[0].estancias[0], e);
     const geo = N.geometriaDe(e, e.plantas[0], e.plantas[0].escaleras[0]);
-    if (c) for (const r of N.parteBaja(geo)) assert.ok(N.distanciaAlContorno(c.centro, r) >= 75 - 0.01 && !N.puntoEnPoligono(c.centro, r), JSON.stringify(c));
+    // Con 400 cm de ancho no cabía ningún círculo y la prueba no comprobaba nada (revisión independiente, ronda 6).
+    assert.ok(c, 'a la derecha de la escalera cabe el círculo');
+    for (const r of N.parteBaja(geo)) assert.ok(N.distanciaAlContorno(c.centro, r) >= 75 - 0.01 && !N.puntoEnPoligono(c.centro, r), JSON.stringify(c));
   });
   test('7: una estancia llamada «exterior» no es la calle', () => {
     const e = N.validarOLanzar({ formato: 'espacios3d', version: 2, nombre: 'x', plantas: [{ id: 'pb', estancias: [

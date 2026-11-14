@@ -17,6 +17,8 @@ export interface AnfitrionRecorrido {
   aviso(texto: string): void;
   /** Al llegar arriba o abajo por una escalera: pasar a esa planta sin salir del recorrido. */
   cambiarPlanta(id: string): void;
+  /** Al entrar: la página cierra los otros modos del lienzo (medir, calibrar, dibujar). */
+  alEntrar?(): void;
 }
 
 /** Velocidades (cm/s) y giro con las flechas (rad/s): ← → a los lados; ↑ ↓ arriba y abajo, hasta CABECEO_MAX. */
@@ -59,7 +61,12 @@ export class Recorrido {
   constructor(private readonly a: AnfitrionRecorrido) {
     $('b-recorrer').addEventListener('click', () => this.alternar());
     window.addEventListener('keyup', (ev) => this.teclas.delete(ev.key.toLowerCase()));
-    window.addEventListener('blur', () => this.teclas.clear());
+    // Al perder el foco no llega el «keyup» ni el «pointerup»: se suelta todo (también la mirada arrastrando).
+    window.addEventListener('blur', () => {
+      this.teclas.clear();
+      this.arrastre = null;
+      this.dedoMirar = null;
+    });
     const lienzo = a.escena.renderer.domElement;
     // Pulsar en la vista mientras se recorre pide el ratón (Pointer Lock); si no se concede, se mira arrastrando.
     lienzo.addEventListener(
@@ -90,6 +97,7 @@ export class Recorrido {
       if (this.dedoMirar?.id === ev.pointerId) this.dedoMirar = null;
     });
     window.addEventListener('pointercancel', (ev) => {
+      this.arrastre = null;
       if (this.dedoMirar?.id === ev.pointerId) this.dedoMirar = null;
     });
     lienzo.addEventListener('pointermove', (ev) => {
@@ -197,6 +205,8 @@ export class Recorrido {
   }
 
   entrar(): void {
+    if (this.activo) return;
+    this.a.alEntrar?.();
     const pl = plantaDe(this.a.esp());
     this.vistaAntes = this.a.escena.vista;
     // El foco no se queda en «Recorrer»: Intro o Espacio lo volverían a pulsar.
@@ -239,6 +249,7 @@ export class Recorrido {
     mando.classList.remove('activo');
     this.dedoMando = null;
     this.dedoMirar = null;
+    this.arrastre = null;
     $('mando-palo').style.transform = '';
     mando.hidden = true;
     if (document.pointerLockElement) document.exitPointerLock();
@@ -253,6 +264,15 @@ export class Recorrido {
   actualizar(forzar = false): void {
     if (!this.activo) return;
     const e = this.a.esp();
+    // Si un agente o deshacer quitan la planta en la que se está o la escalera que se pisa, se vuelve al
+    // suelo de la planta que se ve; si no, no se podría volver a subir por ninguna escalera.
+    const escalera = this.estado.escalera;
+    const sinPlanta = !e.plantas.some((p) => p.id === this.estado.planta);
+    const sinEscalera = escalera !== null && !e.plantas.some((p) => (p.escaleras ?? []).some((x) => x.id === escalera));
+    if (sinPlanta || sinEscalera) {
+      this.estado = { planta: sinPlanta ? plantaDe(e).id : this.estado.planta, escalera: null };
+      this.mirarAhora();
+    }
     const firma = JSON.stringify([e.plantas, this.estado]);
     if (!forzar && firma === this.firma) return;
     this.firma = firma;
@@ -269,6 +289,8 @@ export class Recorrido {
    */
   tecla(ev: KeyboardEvent): boolean {
     if (!this.activo) return false;
+    // Con Ctrl o Cmd es un atajo de la página (Ctrl+S guarda), no la S de andar hacia atrás.
+    if (ev.ctrlKey || ev.metaKey) return false;
     const k = ev.key.toLowerCase();
     if (k === 'escape' || k === 'p') {
       ev.preventDefault();
@@ -281,7 +303,7 @@ export class Recorrido {
       return true;
     }
     // Mientras se recorre no se editan muebles con el teclado.
-    return !(ev.ctrlKey || ev.metaKey);
+    return true;
   }
 
   /** Lo que avanza en un intervalo según las teclas pulsadas (cm, en planta). */
@@ -315,7 +337,7 @@ export class Recorrido {
     if (!this.activo) return;
     const dt = Math.min(0.1, Math.max(0, (t - this.ultimo) / 1000));
     this.ultimo = t;
-    if (($('dialogo') as HTMLDialogElement).open) this.teclas.clear();
+    if (document.querySelector('dialog[open]')) this.teclas.clear();
     const delta = this.paso(dt);
     if (delta[0] || delta[1] || ['arrowleft', 'arrowright', 'arrowup', 'arrowdown'].some((k) => this.teclas.has(k))) {
       if (delta[0] || delta[1]) {
