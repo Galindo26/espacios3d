@@ -9,8 +9,11 @@ function orientacionExif(b: Buffer, inicio: number, fin: number): number {
   const le = b.toString('latin1', t, t + 2) === 'II';
   const u16 = (o: number): number => (le ? b.readUInt16LE(o) : b.readUInt16BE(o));
   const u32 = (o: number): number => (le ? b.readUInt32LE(o) : b.readUInt32BE(o));
-  const ifd = t + u32(t + 4);
-  if (ifd + 2 > fin) return 1;
+  // Cabecera TIFF entera (8 bytes) dentro del segmento, y el IFD detrás de ella y también dentro.
+  if (t + 8 > fin) return 1;
+  const desplazamiento = u32(t + 4);
+  const ifd = t + desplazamiento;
+  if (desplazamiento < 8 || ifd + 2 > fin) return 1;
   const n = u16(ifd);
   for (let k = 0; k < n; k++) {
     const e = ifd + 2 + k * 12;
@@ -25,15 +28,25 @@ export function cabeceraJPEG(b: Buffer): { ancho: number; alto: number; orientac
   if (b.length >= 4 && b[0] === 0xff && b[1] === 0xd8) {
     let i = 2;
     let orientacion = 1;
-    while (i + 9 < b.length) {
+    // Un archivo truncado o con longitudes falsas no es una imagen: nunca se lee fuera del búfer.
+    while (i + 4 <= b.length) {
       if (b[i] !== 0xff) return null;
       // Bytes de relleno 0xFF antes de un marcador (legales en JPEG).
-      while (b[i + 1] === 0xff && i + 2 < b.length) i++;
+      while (i + 1 < b.length && b[i + 1] === 0xff) i++;
+      if (i + 4 > b.length) return null;
       const marca = b[i + 1]!;
+      // Marcadores sin longitud: TEM y RST0–RST7. Con SOI repetido, EOI o SOS ya no hay cabecera que leer.
+      if (marca === 0x01 || (marca >= 0xd0 && marca <= 0xd7)) {
+        i += 2;
+        continue;
+      }
+      if (marca === 0xd8 || marca === 0xd9 || marca === 0xda) return null;
       const largo = b.readUInt16BE(i + 2);
-      if (marca === 0xe1) orientacion = Math.max(orientacion, orientacionExif(b, i + 4, i + 2 + largo));
+      if (largo < 2) return null;
+      if (marca === 0xe1) orientacion = Math.max(orientacion, orientacionExif(b, i + 4, Math.min(b.length, i + 2 + largo)));
       // SOF0–SOF15 salvo DHT (C4), JPG (C8) y DAC (CC).
       if (marca >= 0xc0 && marca <= 0xcf && marca !== 0xc4 && marca !== 0xc8 && marca !== 0xcc) {
+        if (i + 9 > b.length) return null;
         return { alto: b.readUInt16BE(i + 5), ancho: b.readUInt16BE(i + 7), orientacion };
       }
       i += 2 + largo;

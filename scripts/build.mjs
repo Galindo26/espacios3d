@@ -31,7 +31,7 @@ await build({
 
 // Lógica de la página sin DOM (sincronía e historial) para sus pruebas unitarias.
 await build({
-  entryPoints: [join(raiz, 'src/app/sincronia.ts'), join(raiz, 'src/app/estado.ts'), join(raiz, 'src/app/abierto.ts')],
+  entryPoints: [join(raiz, 'src/app/sincronia.ts'), join(raiz, 'src/app/estado.ts'), join(raiz, 'src/app/abierto.ts'), join(raiz, 'src/app/glbEntrada.ts'), join(raiz, 'src/app/almacen.ts')],
   bundle: true,
   format: 'esm',
   platform: 'neutral',

@@ -69,6 +69,10 @@ function paeth(a: number, b: number, c: number): number {
   return pa <= pb && pa <= pc ? a : pb <= pc ? b : c;
 }
 
+/** Tope de tamaño al decodificar (como jpeg.ts) y bytes de más que se toleran tras la imagen. */
+const MAX_MEGAPIXELES = 100;
+const HOLGURA_IDAT = 65536;
+
 /** Decodifica un PNG de 8 bits por canal (tipos de color 0, 2, 3, 4 y 6) a RGBA de 8 bits. */
 export function decodificarPNG(bytes: Uint8Array): { ancho: number; alto: number; rgba: Uint8Array } {
   if (bytes.length < 8 || FIRMA.some((v, i) => bytes[i] !== v)) throw new Error('PNG: firma no válida (no es un PNG)');
@@ -102,6 +106,8 @@ export function decodificarPNG(bytes: Uint8Array): { ancho: number; alto: number
         if (datos[10] !== 0 || datos[11] !== 0) throw new Error('PNG: método de compresión o de filtro desconocido');
         if (datos[12] !== 0) throw new Error('PNG: imagen entrelazada (Adam7) no admitida');
         if (ancho === 0 || alto === 0) throw new Error('PNG: tamaño cero');
+        // El mismo tope que los JPEG, antes de reservar nada.
+        if (ancho * alto > MAX_MEGAPIXELES * 1e6) throw new Error(`PNG: ${ancho} × ${alto} px son más de ${MAX_MEGAPIXELES} megapíxeles`);
         break;
       }
       case 'PLTE':
@@ -128,12 +134,15 @@ export function decodificarPNG(bytes: Uint8Array): { ancho: number; alto: number
   const canales = CANALES[tipo]!;
   const fila = ancho * canales;
   let crudo: Uint8Array;
+  const esperado = alto * (fila + 1);
   try {
-    crudo = inflateSync(Buffer.concat(idat));
+    // Con tope: un IDAT pequeño puede descomprimirse en gigas. Se toleran unos bytes de más al final.
+    crudo = inflateSync(Buffer.concat(idat), { maxOutputLength: esperado + HOLGURA_IDAT });
   } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === 'ERR_BUFFER_TOO_LARGE') throw new Error('PNG: trae muchos más datos de imagen de los que caben en su tamaño');
     throw new Error(`PNG: datos comprimidos dañados (${(e as Error).message})`);
   }
-  if (crudo.length < alto * (fila + 1)) throw new Error('PNG: datos de imagen incompletos');
+  if (crudo.length < esperado) throw new Error('PNG: datos de imagen incompletos');
 
   // Deshacer filtros, fila a fila, sobre un búfer sin los bytes de filtro.
   const px = new Uint8Array(alto * fila);

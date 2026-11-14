@@ -171,10 +171,23 @@ function choquesConElementos(est: Estancia, m: Mueble, e: Punto[]): Incidencia[]
     } else if (el.forma === 'adosado' && tipo === 'radiador' && !bajoElHueco(z1)) {
       const n = normalInterior(est.contorno, el.muro);
       const delante = [huella[3]!, huella[2]!, [huella[2]![0] + n[0] * DELANTE_RADIADOR, huella[2]![1] + n[1] * DELANTE_RADIADOR] as Punto, [huella[3]![0] + n[0] * DELANTE_RADIADOR, huella[3]![1] + n[1] * DELANTE_RADIADOR] as Punto];
-      if (solapeConvexos(e, delante) > 0 && m.elevacion < z1) {
+      // Sólo lo que queda a su altura: un taburete bajo un radiador alto no le quita calor.
+      if (solapeConvexos(e, delante) > 0 && m.elevacion < z1 - TOLERANCIA && arriba > z0 + TOLERANCIA) {
         res.push({ gravedad: 'aviso', regla: 'elemento', mensaje: `${nombre(m)} está a menos de ${DELANTE_RADIADOR} cm delante ${deElemento(el)}: no calentará bien`, muebles: [m.id] });
       }
     }
+  }
+  return res;
+}
+
+/** Puntos del borde de un polígono cada `paso` cm como mucho, con sus vértices. */
+function puntosDelBorde(pol: readonly Punto[], paso: number): Punto[] {
+  const res: Punto[] = [];
+  for (let i = 0; i < pol.length; i++) {
+    const a = pol[i]!;
+    const b = pol[(i + 1) % pol.length]!;
+    const n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / paso));
+    for (let k = 0; k < n; k++) res.push([a[0] + ((b[0] - a[0]) * k) / n, a[1] + ((b[1] - a[1]) * k) / n]);
   }
   return res;
 }
@@ -194,10 +207,11 @@ export function analizarPlanta(p: Planta): Incidencia[] {
     if (est && m.elevacion + m.alto > est.altura + TOLERANCIA) {
       res.push({ gravedad: 'error', regla: 'altura', mensaje: `${nombre(m)} supera la altura del techo (${m.elevacion + m.alto} > ${est.altura} cm)`, muebles: [m.id] });
     } else if (est?.faldones?.length) {
-      // Techo inclinado: el mueble tiene que caber en su esquina más baja.
-      const techo = Math.min(...esquinas.get(m.id)!.map((q) => alturaTecho(est, q)));
+      // Techo inclinado: el mueble tiene que caber donde el techo le queda más bajo. Ese punto está
+      // siempre en su borde, pero no siempre en una esquina (un faldón sólo baja frente a su pared).
+      const techo = Math.min(...puntosDelBorde(esquinas.get(m.id)!, 5).map((q) => alturaTecho(est, q)));
       if (m.elevacion + m.alto > techo + TOLERANCIA) {
-        res.push({ gravedad: 'error', regla: 'altura', mensaje: `${nombre(m)} no cabe bajo el techo inclinado (mide ${m.elevacion + m.alto} cm y en su esquina más baja el techo está a ${Math.round(techo)} cm)`, muebles: [m.id] });
+        res.push({ gravedad: 'error', regla: 'altura', mensaje: `${nombre(m)} no cabe bajo el techo inclinado (mide ${m.elevacion + m.alto} cm y en su punto más bajo el techo está a ${Math.round(techo)} cm)`, muebles: [m.id] });
       }
     }
     if (est?.elementos?.length && !esPlano(m)) res.push(...choquesConElementos(est, m, esquinas.get(m.id)!));
@@ -298,6 +312,18 @@ export function analizarPlanta(p: Planta): Incidencia[] {
         res.push({ gravedad: 'error', regla: 'paso', mensaje: `${nombre(m)} tapa el paso de «${h.id}» por el lado de ${x.da} (deja libres ${FRANJA_PASO} cm delante)`, muebles: [m.id], huecos: [h.id] });
       }
     }
+    // Y la obra de esa estancia (una columna, un radiador), igual que la de la estancia del hueco.
+    const vecina = p.estancias.find((s) => s.id === x.da);
+    for (const el of vecina?.elementos ?? []) {
+      if ((el.forma !== 'exento' && el.forma !== 'adosado') || tipoNormal(el.tipo) === 'escalon') continue;
+      if (rangoAltura(vecina!, el)[0] >= h.antepecho + h.alto - TOLERANCIA) continue;
+      const huella = huellaElemento(vecina!, el)!;
+      if (barrido && solapeConvexos(huella, barrido) > 0) {
+        res.push({ gravedad: 'error', regla: 'puerta', mensaje: `${nombreElemento(el)} está en el barrido de la puerta «${h.id}», que abre hacia ${x.da}: no se podría abrir del todo`, muebles: [], huecos: [h.id] });
+      } else if (paso && solapeConvexos(huella, paso) > 0) {
+        res.push({ gravedad: 'error', regla: 'paso', mensaje: `${nombreElemento(el)} tapa el paso de «${h.id}» por el lado de ${x.da}`, muebles: [], huecos: [h.id] });
+      }
+    }
   }
 
   // Puertas y pasos más altos que el techo inclinado sobre ellos (en 3D atravesarían el techo).
@@ -306,8 +332,9 @@ export function analizarPlanta(p: Planta): Incidencia[] {
     for (const h of s.huecos) {
       if (h.tipo === 'ventana') continue;
       const g = geometriaHueco(s.contorno, h);
-      const centro: Punto = [(g.a[0] + g.b[0]) / 2 + g.n[0], (g.a[1] + g.b[1]) / 2 + g.n[1]];
-      const techo = alturaTecho(s, centro);
+      // En el centro y en las dos jambas (1 cm hacia dentro): el techo puede bajar hacia un lado.
+      const dentro = (q: Punto, k: number): Punto => [q[0] + g.n[0] + g.t[0] * k, q[1] + g.n[1] + g.t[1] * k];
+      const techo = Math.min(alturaTecho(s, dentro(g.a, 0.2)), alturaTecho(s, dentro([(g.a[0] + g.b[0]) / 2, (g.a[1] + g.b[1]) / 2], 0)), alturaTecho(s, dentro(g.b, -0.2)));
       if (h.alto > techo + TOLERANCIA) res.push({ gravedad: 'aviso', regla: 'hueco', mensaje: `«${h.id}» mide ${h.alto} cm de alto y ahí el techo inclinado está a ${Math.round(techo)} cm`, muebles: [], huecos: [h.id] });
     }
   }
@@ -321,8 +348,11 @@ export function analizarPlanta(p: Planta): Incidencia[] {
         res.push({ gravedad: 'aviso', regla: 'elemento', mensaje: `${nombreElemento(el)} queda fuera de su estancia (${s.nombre}): revisa su posición`, muebles: [] });
       }
       if (tipoNormal(el.tipo) === 'escalon') continue;
+      const [base] = rangoAltura(s, el);
       for (const h of s.huecos) {
         if (h.tipo === 'ventana') continue;
+        // Lo que empieza por encima del dintel no estorba (como los muebles colgados).
+        if (base >= h.antepecho + h.alto - TOLERANCIA) continue;
         const g = geometriaHueco(s.contorno, h);
         const barrido = barridoPuerta(g);
         const paso = franjaPaso(g);

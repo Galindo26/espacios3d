@@ -267,8 +267,11 @@ export function contornoExterior(contorno: readonly Punto[], grosor: number): Pu
     }
     const t = ((pb[0] - pa[0]) * db[1] - (pb[1] - pa[1]) * db[0]) / cruz;
     const inglete: Punto = [pa[0] + t * da[0], pa[1] + t * da[1]];
-    // Límite de inglete: en ángulos muy agudos el vértice exterior se dispararía.
-    if (distancia(inglete, p) > grosor * 4) res.push([p[0] - (nA[0] + nB[0]) * grosor, p[1] - (nA[1] + nB[1]) * grosor]);
+    // Límite de inglete: en ángulos muy agudos el vértice exterior se dispararía. Se recorta sobre la
+    // misma línea del inglete, a 4 grosores de la esquina (sumar las dos normales, casi opuestas, dejaba
+    // el vértice pegado a ella y el muro sin grosor).
+    const lejos = distancia(inglete, p);
+    if (lejos > grosor * 4) res.push([p[0] + ((inglete[0] - p[0]) * grosor * 4) / lejos, p[1] + ((inglete[1] - p[1]) * grosor * 4) / lejos]);
     else res.push(inglete);
   }
   return res;

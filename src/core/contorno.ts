@@ -197,6 +197,9 @@ export function cambiarContorno(e: Espacio, contorno: Punto[], estanciaId?: stri
 export function insertarVertice(e: Espacio, i: number, d: number, estanciaId?: string): Espacio {
   const est = estancia(e, estanciaId).estancia;
   const c = est.contorno;
+  // Como en moverTabique: con un índice fuera de rango, el punto se calculaba en un muro y los huecos se
+  // renumeraban como si fuera otro.
+  if (!Number.isInteger(i) || i < 0 || i >= c.length) throw new ErrorOperacion(`«${est.id}» no tiene el muro ${i} (tiene ${c.length}, del 0 al ${c.length - 1})`);
   const largo = longitudMuro(c, i);
   if (!(d > TOLERANCIA && d < largo - TOLERANCIA)) throw new ErrorOperacion(`Ahí ya hay una esquina: elige un punto dentro del muro ${i} (pared ${i + 1} en la página)`);
   const [a, b] = muro(c, i);

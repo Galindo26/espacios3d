@@ -924,8 +924,17 @@ class App {
     const ok = await this.sinc.guardarComo(this.sinc.almacen.nombreArchivo() ?? nombreArchivo(this.esp.nombre));
     if (ok) {
       $('b-continuar').hidden = true;
-      this.salirDeAbierto();
+      // Sólo si queda unido a un archivo: tras una descarga (Firefox, Safari) se sigue viendo la copia
+      // del agente, y sus planos, fotos y modelos se siguen sirviendo desde la página.
+      if (this.sinc.almacen.vinculado()) this.salirDeAbierto();
     }
+  }
+
+  /** Vuelve a pedir planos, fotos, modelos y «Mis muebles»: tras unirse a un archivo se leen de su carpeta. */
+  private repintarRecursos(): void {
+    this.calco?.pintar();
+    this.modelos?.pintar();
+    this.fotos?.pintar();
   }
 
   // ---------- Página abierta por un agente (ronda 5) ----------
@@ -1065,6 +1074,7 @@ class App {
       }
       await this.sinc.vincularConservando(leido);
       this.salirDeAbierto();
+      this.repintarRecursos();
       this.aviso(cambios ? `Unido a ${leido.nombre}: tus cambios se están guardando.` : `Unido a ${leido.nombre}: desde ahora se guarda solo.`);
       return;
     }
@@ -1117,6 +1127,7 @@ class App {
     } else if (eleccion === 'encima') {
       await this.sinc.vincularConservando(leido);
       this.salirDeAbierto();
+      this.repintarRecursos();
     } else {
       let creado: Leido | null = null;
       try {
@@ -1717,6 +1728,7 @@ class App {
       colocarRecorrido: (x: number, y: number, grados: number) => this.recorrido?.colocar(x, y, grados),
       hayMuroEntre: (a: Punto, b: Punto, altura: number) => escena.hayMuroEntre(a, b, altura),
       vista: () => escena.vista,
+      memoria: () => escena.memoria(),
       plantaActiva: () => plantaActivaId(this.esp),
       formaMueble: (id: string) => escena.formaMueble(id),
       cinta: () => this.cinta?.estado() ?? null,

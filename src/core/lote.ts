@@ -21,7 +21,7 @@ import { agregarFoto, quitarFoto } from './fotos.js';
 export type Op = { op: string } & Record<string, unknown>;
 
 const CLAVES: Record<string, readonly string[]> = {
-  agregar: ['planta', 'estancia', 'tipo', 'id', 'nombre', 'ancho', 'fondo', 'alto', 'x', 'y', 'muro', 'desde', 'separacion', 'giro', 'elevacion', 'color', 'bloqueado', 'holguraFrente', 'huecoInferior', 'piezas', 'modelo'],
+  agregar: ['planta', 'estancia', 'tipo', 'id', 'nombre', 'ancho', 'fondo', 'alto', 'x', 'y', 'muro', 'desde', 'separacion', 'giro', 'elevacion', 'color', 'bloqueado', 'holguraFrente', 'huecoInferior', 'piezas', 'modelo', 'fotos'],
   mover: ['id', 'x', 'y', 'dx', 'dy', 'muro', 'desde', 'separacion', 'estancia'],
   girar: ['id', 'giro', 'sumar'],
   editar: ['id', 'nombre', 'tipo', 'ancho', 'fondo', 'alto', 'x', 'y', 'giro', 'elevacion', 'color', 'bloqueado', 'holguraFrente', 'huecoInferior', 'piezas', 'modelo'],
@@ -201,7 +201,8 @@ export function ejecutarOp(e: Espacio, op: Op): ResultadoOp {
   switch (op.op) {
     case 'agregar': {
       const tipo = txt(op, 'tipo', true) as string;
-      const datos: DatosMueble = { tipo, ...datosMueble(op), ...sinIndefinidos({ id: txt(op, 'id') }) };
+      // «fotos» llega con uno de «Mis muebles» que las tenía; la validación del espacio comprueba las rutas.
+      const datos: DatosMueble = { tipo, ...datosMueble(op), ...sinIndefinidos({ id: txt(op, 'id') }), ...(Array.isArray(op.fotos) ? { fotos: op.fotos as string[] } : {}) };
       const muro = num(op, 'muro');
       // Estancia y planta de destino: la estancia manda y debe ser de la planta indicada.
       const estId = txt(op, 'estancia');

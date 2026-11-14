@@ -78,10 +78,24 @@ export interface GeometriaEscalera {
   entrada: Punto;
   /** Barandillas: bordes de la huella que no son pie ni llegada, y la separación entre tramos de la U; el arco exterior en la caracol. */
   barandillas: [Punto, Punto][];
+  /**
+   * Las mismas barandillas en 3D: tramos rectos con la cota del suelo que se pisa (cm) en cada extremo.
+   * Se anota al construirlas: deducirla después del punto en planta fallaba en los bordes de una
+   * escalera girada (coma flotante) y al cerrar la vuelta de una caracol de 360°.
+   */
+  pasamanos: Pasamanos[];
   altura: number;
   peldanos: number;
   /** Ancho de cada tramo (cm). */
   ancho: number;
+}
+
+/** Tramo recto de barandilla: extremos en planta y cota del suelo que se pisa en cada uno (cm). */
+export interface Pasamanos {
+  a: Punto;
+  b: Punto;
+  za: number;
+  zb: number;
 }
 
 export function peldanosPorDefecto(altura: number, forma: Escalera['forma'] = 'recta'): number {
@@ -148,8 +162,14 @@ export function geometriaEscalera(esc: Escalera, altura: number, techo = Infinit
   const lado = (a0: number, b0: number, a1: number, b1: number): void => {
     bar.push([P(a0, b0), P(a1, b1)]);
   };
+  const pas: Pasamanos[] = [];
+  const lado3 = (a0: number, b0: number, a1: number, b1: number, za: number, zb: number): void => {
+    pas.push({ a: P(a0, b0), b: P(a1, b1), za, zb });
+  };
   if (esc.forma === 'recta') {
     const L = esc.largo ?? 0;
+    lado3(-h, 0, -h, L, 0, altura);
+    lado3(h, 0, h, L, 0, altura);
     tramos.push({ rect: rect(-h, h, 0, L), peldanos: N, z0: 0, z1: altura, inicio: P(0, 0), dir: F, largo: L });
     llegada = [P(-h, L), P(h, L)];
     salida = F;
@@ -170,7 +190,10 @@ export function geometriaEscalera(esc: Escalera, altura: number, techo = Infinit
     const af = a0 + s * vuelta;
     salida = [-s * Math.sin(af), s * Math.cos(af)];
     const ext = arco(c, c.rExt, 0, vuelta);
-    for (let i = 0; i + 1 < ext.length; i++) bar.push([ext[i]!, ext[i + 1]!]);
+    for (let i = 0; i + 1 < ext.length; i++) {
+      bar.push([ext[i]!, ext[i + 1]!]);
+      pas.push({ a: ext[i]!, b: ext[i + 1]!, za: (altura * i) / (ext.length - 1), zb: (altura * (i + 1)) / (ext.length - 1) });
+    }
     poste = Array.from({ length: 24 }, (_, i) => [centro[0] + rPoste * Math.cos((i / 24) * 2 * Math.PI), centro[1] + rPoste * Math.sin((i / 24) * 2 * Math.PI)] as Punto);
   } else {
     const [l1, l2] = esc.tramos ?? [0, 0];
@@ -191,6 +214,12 @@ export function geometriaEscalera(esc: Escalera, altura: number, techo = Infinit
       lado(-s * h, l1 + w, a1, l1 + w);
       lado(s * h, 0, s * h, l1);
       lado(a0, l1, a1, l1);
+      lado3(-s * h, 0, -s * h, l1, 0, zm);
+      lado3(-s * h, l1, -s * h, l1 + w, zm, zm);
+      lado3(-s * h, l1 + w, s * h, l1 + w, zm, zm);
+      lado3(s * h, l1 + w, a1, l1 + w, zm, altura);
+      lado3(s * h, 0, s * h, l1, 0, zm);
+      lado3(a0, l1, a1, l1, zm, altura);
     } else {
       const o = esc.ojo ?? 0;
       const ancho2 = 2 * w + o;
@@ -209,10 +238,17 @@ export function geometriaEscalera(esc: Escalera, altura: number, techo = Infinit
       lado(s * (h + o + w), l1 + w, s * (h + o + w), l1 - l2);
       lado(s * h, 0, s * h, l1);
       lado(s * (h + o), l1 - l2, s * (h + o), l1);
+      lado3(-s * h, 0, -s * h, l1, 0, zm);
+      lado3(-s * h, l1, -s * h, l1 + w, zm, zm);
+      lado3(-s * h, l1 + w, s * (h + o + w), l1 + w, zm, zm);
+      lado3(s * (h + o + w), l1 + w, s * (h + o + w), l1, zm, zm);
+      lado3(s * (h + o + w), l1, s * (h + o + w), l1 - l2, zm, altura);
+      lado3(s * h, 0, s * h, l1, 0, zm);
+      lado3(s * (h + o), l1 - l2, s * (h + o), l1, altura, zm);
     }
   }
   huella ??= [...tramos.map((t) => t.rect), ...(meseta ? [meseta.rect] : []), ...(ojo ? [ojo] : [])];
-  const geo: GeometriaEscalera = { forma: esc.forma, tramos, meseta, ojo, caracol, poste, huella, hueco: huella, techo, pie: [P(-h, 0), P(h, 0)], llegada, salida, entrada: F, barandillas: bar, altura, peldanos: N, ancho: w };
+  const geo: GeometriaEscalera = { forma: esc.forma, tramos, meseta, ojo, caracol, poste, huella, hueco: huella, techo, pie: [P(-h, 0), P(h, 0)], llegada, salida, entrada: F, barandillas: bar, pasamanos: pas, altura, peldanos: N, ancho: w };
   geo.hueco = huecoEscalera(geo, techo);
   return geo;
 }
@@ -488,6 +524,22 @@ export function bajoMinimo(geo: GeometriaEscalera, pol: readonly Punto[]): numbe
   return min;
 }
 
+/** Mayor cota de la rampa sobre un polígono convexo (null si no pisa la escalera: sólo el ojo o el poste). */
+export function cimaMaxima(geo: GeometriaEscalera, pol: readonly Punto[]): number | null {
+  let max: number | null = null;
+  const esquinas: Punto[] = [];
+  for (const r of geo.huella) {
+    const cx = r.reduce((s, q) => s + q[0], 0) / r.length;
+    const cy = r.reduce((s, q) => s + q[1], 0) / r.length;
+    for (const v of r) if (dentroConvexo(v, pol, 1e-6)) esquinas.push([v[0] + (cx - v[0]) * 1e-3, v[1] + (cy - v[1]) * 1e-3]);
+  }
+  for (const q of [...muestras(pol, 5), ...esquinas]) {
+    const z = alturaEnEscalera(geo, q);
+    if (z !== null && (max === null || z > max)) max = z;
+  }
+  return max;
+}
+
 /**
  * Altura libre (cm) entre una escalera de abajo y otra que pasa por encima de ella: lo menos que hay
  * entre la rampa de la de abajo y la cara inferior de la de arriba, muestreando cada 10 cm donde se
@@ -520,11 +572,12 @@ export function analizarEscaleras(e: Espacio): IncidenciaEscalera[] {
       origen.set(esc.id, p);
     }
   }
-  const obraEn = (pl: Planta): { id: string; huella: Punto[]; tope: number }[] =>
+  const obraEn = (pl: Planta): { id: string; huella: Punto[]; base: number; tope: number }[] =>
     pl.estancias.flatMap((s) =>
       (s.elementos ?? []).flatMap((el) => {
         const hh = huellaElemento(s, el);
-        return hh && hh.length >= 3 ? [{ id: el.id, huella: hh, tope: rangoAltura(s, el)[1] }] : [];
+        const [base, tope] = rangoAltura(s, el);
+        return hh && hh.length >= 3 ? [{ id: el.id, huella: hh, base, tope }] : [];
       }),
     );
   for (const p of e.plantas) {
@@ -536,21 +589,35 @@ export function analizarEscaleras(e: Espacio): IncidenciaEscalera[] {
       const err = (planta: Planta, mensaje: string, muebles: string[] = []): void => void res.push({ gravedad: 'error', mensaje, planta: planta.id, escalera: esc.id, muebles });
       const aviso = (planta: Planta, mensaje: string): void => void res.push({ gravedad: 'aviso', mensaje, planta: planta.id, escalera: esc.id, muebles: [] });
       const choca = (pl: Planta, zona: Punto[][]): { muebles: string[]; obra: string[] } => ({
-        muebles: pl.muebles.filter((m) => solapa([esquinasMueble(m)], zona)).map((m) => m.id),
-        obra: obraEn(pl).filter((o) => solapa([o.huella], zona)).map((o) => o.id),
+        // Lo que empieza por encima de la altura libre (una viga de techo, algo colgado alto) no tapa el paso.
+        muebles: pl.muebles.filter((m) => m.elevacion < ALTURA_LIBRE - TOLERANCIA && solapa([esquinasMueble(m)], zona)).map((m) => m.id),
+        obra: obraEn(pl).filter((o) => o.base < ALTURA_LIBRE - TOLERANCIA && solapa([o.huella], zona)).map((o) => o.id),
       });
       // Abajo: la huella en el suelo de una estancia; debajo, sólo lo que quepa bajo la cara inferior.
       if (!enUnaEstancia(p, geo.huella)) err(p, `${n} no cabe entera en el suelo de una estancia (se sale o cruza un tabique)`);
-      const noCabe = (pol: Punto[], tope: number, id: string): string | null => {
+      // Lo que va de `base` a `tope` sobre la huella: o cabe debajo de la escalera, o queda por encima
+      // de quien sube con la altura libre (una viga de techo, algo colgado alto), o estorba.
+      const noCabe = (pol: Punto[], base: number, tope: number, id: string): string | null => {
         if (!solapa([pol], geo.huella)) return null;
         const bajo = bajoMinimo(geo, pol);
         if (bajo === null || tope <= bajo + TOLERANCIA) return null;
+        const cima = cimaMaxima(geo, pol);
+        if (cima !== null && base >= cima - TOLERANCIA) {
+          if (base >= cima + ALTURA_LIBRE - TOLERANCIA) return null;
+          return `!${id} queda a ${r1(base - cima)} cm sobre la escalera (hacen falta ${ALTURA_LIBRE})`;
+        }
         return `${id} llega a ${r1(tope)} cm y debajo hay ${r1(bajo)}`;
       };
-      const mu = p.muebles.map((m) => ({ id: m.id, d: noCabe(esquinasMueble(m), m.elevacion + m.alto, m.id) })).filter((x) => x.d);
-      const ob = obraEn(p).map((o) => ({ id: o.id, d: noCabe(o.huella, o.tope, o.id) })).filter((x) => x.d);
-      if (ob.length) err(p, `${n} choca con obra: ${ob.map((x) => x.id).join(', ')} (no cabe debajo: ${ob.map((x) => x.d).join('; ')})`);
-      if (mu.length) err(p, `${n} tiene muebles encima: ${mu.map((x) => x.id).join(', ')} (no caben debajo: ${mu.map((x) => x.d).join('; ')})`, mu.map((x) => x.id));
+      const mu = p.muebles.map((m) => ({ id: m.id, d: noCabe(esquinasMueble(m), m.elevacion, m.elevacion + m.alto, m.id) })).filter((x) => x.d);
+      const ob = obraEn(p).map((o) => ({ id: o.id, d: noCabe(o.huella, o.base, o.tope, o.id) })).filter((x) => x.d);
+      // Con «!» delante, lo que queda por encima sin altura libre; sin él, lo que no cabe debajo.
+      const detalle = (xs: { d: string | null }[], debajo: string): string => {
+        const bajo = xs.filter((x) => !x.d!.startsWith('!')).map((x) => x.d);
+        const sobre = xs.filter((x) => x.d!.startsWith('!')).map((x) => x.d!.slice(1));
+        return [...(bajo.length ? [`${debajo}: ${bajo.join('; ')}`] : []), ...sobre].join('; ');
+      };
+      if (ob.length) err(p, `${n} choca con obra: ${ob.map((x) => x.id).join(', ')} (${detalle(ob, 'no cabe debajo')})`);
+      if (mu.length) err(p, `${n} tiene muebles encima: ${mu.map((x) => x.id).join(', ')} (${detalle(mu, 'no caben debajo')})`, mu.map((x) => x.id));
       const pie = zonaPie(geo);
       if (!p.estancias.some((s) => convexoDentroDePoligono(pie, s.contorno))) err(p, `${n}: delante del pie no hay ${ZONA_LIBRE_ESCALERA} cm de suelo libre (arranca contra una pared)`);
       let c = choca(p, [pie]);
@@ -635,7 +702,8 @@ export type PiezaEscalera =
 /** Barandilla sobre un segmento: pasamanos a ALTO_BARANDILLA sobre el suelo que pisa, en trozos, y postes en los extremos. */
 function barandilla(a: Punto, b: Punto, suelo: (p: Punto) => number, postes = true): PiezaEscalera[] {
   const largo = Math.hypot(b[0] - a[0], b[1] - a[1]);
-  const n = Math.max(1, Math.ceil(largo / 20));
+  // Con holgura: el largo de un tramo girado no es exacto y no debe cambiar el número de trozos.
+  const n = Math.max(1, Math.ceil(largo / 20 - 1e-6));
   const res: PiezaEscalera[] = [];
   const q = (k: number): Punto => [a[0] + ((b[0] - a[0]) * k) / n, a[1] + ((b[1] - a[1]) * k) / n];
   for (let k = 0; k < n; k++) {
@@ -654,7 +722,6 @@ function barandilla(a: Punto, b: Punto, suelo: (p: Punto) => number, postes = tr
  */
 export function piezasEscalera(geo: GeometriaEscalera): PiezaEscalera[] {
   const res: PiezaEscalera[] = [];
-  const suelo = (p: Punto): number => alturaEnEscalera(geo, p) ?? 0;
   if (geo.caracol) {
     const c = geo.caracol;
     const d = c.vuelta / geo.peldanos;
@@ -664,10 +731,15 @@ export function piezasEscalera(geo: GeometriaEscalera): PiezaEscalera[] {
       const z1 = (k + 1) * ch;
       res.push({ tipo: 'prisma', base, z0: Math.max(0, z1 - GROSOR_PELDANO_CARACOL), z1 });
       // Pasamanos por el borde exterior siguiendo la rampa, con un poste al empezar cada peldaño.
+      // La cota sale del ángulo recorrido, no del punto: al cerrar una vuelta de 360° el punto final
+      // coincide en planta con el del pie.
       const ext = arco(c, c.rExt - 2, k * d, (k + 1) * d);
-      for (let i = 0; i + 1 < ext.length; i++) res.push(...barandilla(ext[i]!, ext[i + 1]!, suelo, false));
+      const z = (i: number): number => (k + i / (ext.length - 1)) * ch;
+      for (let i = 0; i + 1 < ext.length; i++) {
+        res.push({ tipo: 'barra', a: [ext[i]![0], ext[i]![1], z(i) + ALTO_BARANDILLA], b: [ext[i + 1]![0], ext[i + 1]![1], z(i + 1) + ALTO_BARANDILLA], grueso: 4 });
+      }
       const p0 = ext[0]!;
-      res.push({ tipo: 'barra', a: [p0[0], p0[1], z1], b: [p0[0], p0[1], suelo(p0) + ALTO_BARANDILLA], grueso: 4 });
+      res.push({ tipo: 'barra', a: [p0[0], p0[1], z1], b: [p0[0], p0[1], z(0) + ALTO_BARANDILLA], grueso: 4 });
     }
     const pf = enCaracol(c, c.rExt - 2, c.vuelta);
     res.push({ tipo: 'barra', a: [pf[0], pf[1], geo.altura], b: [pf[0], pf[1], geo.altura + ALTO_BARANDILLA], grueso: 4 });
@@ -682,7 +754,11 @@ export function piezasEscalera(geo: GeometriaEscalera): PiezaEscalera[] {
     }
   }
   if (geo.meseta) res.push({ tipo: 'prisma', base: geo.meseta.rect, z0: Math.max(0, geo.meseta.z - LOSA_ESCALERA), z1: geo.meseta.z });
-  for (const [a, b] of geo.barandillas) res.push(...barandilla(a, b, suelo));
+  for (const s of geo.pasamanos) {
+    const l2 = (s.b[0] - s.a[0]) ** 2 + (s.b[1] - s.a[1]) ** 2 || 1;
+    const cota = (p: Punto): number => s.za + ((s.zb - s.za) * ((p[0] - s.a[0]) * (s.b[0] - s.a[0]) + (p[1] - s.a[1]) * (s.b[1] - s.a[1]))) / l2;
+    res.push(...barandilla(s.a, s.b, cota));
+  }
   return res;
 }
 

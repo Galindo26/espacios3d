@@ -3,6 +3,7 @@
 //   dibuja en lugar de su forma; si falta o no se puede leer (Draco, meshopt, KTX2…), se ve la forma
 //   genérica (o sus piezas) y se avisa. Las colisiones usan siempre las medidas del mueble.
 // - «Mis muebles» (mis-muebles.json junto al espacio) guarda muebles para usarlos en otros espacios.
+import { comprobarGlb } from './glbEntrada.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { DatosMueble, Espacio, MisMuebles, Mueble, MuebleGuardado } from '../core/index.js';
@@ -30,35 +31,20 @@ export interface AnfitrionModelos {
   repintar(): void;
 }
 
-/** Extensiones de glTF que no se leen (necesitarían decodificadores aparte). */
-const NO_SOPORTADAS: Record<string, string> = {
-  KHR_draco_mesh_compression: 'Draco',
-  EXT_meshopt_compression: 'meshopt',
-  KHR_texture_basisu: 'KTX2',
-};
+export { comprobarGlb };
 
 type EstadoModelo = THREE.Object3D | 'cargando' | 'falta' | { error: string };
 
-/**
- * Comprueba el .glb antes de leerlo: que lo sea, qué compresiones pide que no se leen y qué
- * archivos de fuera pide (imágenes o búferes con `uri` que no sea `data:`). Lanza si no es un .glb.
- */
-export function comprobarGlb(buf: ArrayBuffer): { raras: string[]; externas: string[] } {
-  const dv = new DataView(buf);
-  if (buf.byteLength < 20 || dv.getUint32(0, true) !== 0x46546c67) throw new Error('no es un .glb (glTF binario)');
-  const largo = dv.getUint32(12, true);
-  if (dv.getUint32(16, true) !== 0x4e4f534a || 20 + largo > buf.byteLength) throw new Error('el .glb está dañado');
-  const json = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 20, largo))) as {
-    extensionsRequired?: string[];
-    extensionsUsed?: string[];
-    images?: { uri?: unknown }[];
-    buffers?: { uri?: unknown }[];
-  };
-  const raras = [...new Set([...(json.extensionsRequired ?? []), ...(json.extensionsUsed ?? [])])].filter((x) => x in NO_SOPORTADAS).map((x) => NO_SOPORTADAS[x]!);
-  const externas = [...(json.images ?? []), ...(json.buffers ?? [])]
-    .map((x) => x?.uri)
-    .filter((u): u is string => typeof u === 'string' && !/^data:/i.test(u));
-  return { raras, externas };
+/** Libera la geometría, los materiales y las texturas de un modelo cargado. */
+function soltar(x: THREE.Object3D): void {
+  x.traverse((o) => {
+    const m = o as THREE.Mesh;
+    m.geometry?.dispose();
+    for (const mat of ([] as THREE.Material[]).concat((m.material as THREE.Material | THREE.Material[] | undefined) ?? [])) {
+      for (const v of Object.values(mat)) if (v instanceof THREE.Texture) v.dispose();
+      mat.dispose();
+    }
+  });
 }
 
 async function leerModelo(buf: ArrayBuffer): Promise<THREE.Object3D> {
@@ -122,17 +108,7 @@ export class Modelos {
 
   /** Al vincular otro archivo, los modelos cargados del anterior se liberan. */
   private soltarCache(): void {
-    for (const x of this.cache.values()) {
-      if (!(x instanceof THREE.Object3D)) continue;
-      x.traverse((o) => {
-        const m = o as THREE.Mesh;
-        m.geometry?.dispose();
-        for (const mat of ([] as THREE.Material[]).concat((m.material as THREE.Material | THREE.Material[] | undefined) ?? [])) {
-          for (const v of Object.values(mat)) if (v instanceof THREE.Texture) v.dispose();
-          mat.dispose();
-        }
-      });
-    }
+    for (const x of this.cache.values()) if (x instanceof THREE.Object3D) soltar(x);
     this.cache.clear();
     this.revisado.clear();
   }
@@ -186,7 +162,7 @@ export class Modelos {
     if (Modelos.firma(blob) !== (antes?.firma ?? null) && this.clave(archivo) === k) {
       const viejo = this.cache.get(k);
       this.cache.delete(k);
-      if (viejo instanceof THREE.Object3D) viejo.traverse((o) => (o as THREE.Mesh).geometry?.dispose());
+      if (viejo instanceof THREE.Object3D) soltar(viejo);
       void this.cargar(archivo);
     }
   }

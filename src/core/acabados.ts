@@ -81,7 +81,13 @@ export function revestimientoPorMuro(s: Estancia, modelo: ModeloPlanta): Punto3[
       const pb = en(ub);
       const tramo = (z0: number, z1a: number, z1b: number): void => {
         if (Math.max(z1a, z1b) - z0 < 0.05) return;
-        res.push([[pa[0], pa[1], z0], [pb[0], pb[1], z0], [pb[0], pb[1], z1b], [pa[0], pa[1], z1a]]);
+        // Bajo un techo inclinado un extremo puede quedar sin altura: entonces es un triángulo (un
+        // cuadrilátero con dos vértices iguales no tiene normal y el .glb no se podía escribir).
+        const abajoA: Punto3 = [pa[0], pa[1], z0];
+        const abajoB: Punto3 = [pb[0], pb[1], z0];
+        if (z1b - z0 < 0.01) res.push([abajoA, abajoB, [pa[0], pa[1], z1a]]);
+        else if (z1a - z0 < 0.01) res.push([abajoA, abajoB, [pb[0], pb[1], z1b]]);
+        else res.push([abajoA, abajoB, [pb[0], pb[1], z1b], [pa[0], pa[1], z1a]]);
       };
       for (const [z0, z1] of tapados) {
         if (z0 > z) tramo(z, z0, z0);
@@ -94,7 +100,7 @@ export function revestimientoPorMuro(s: Estancia, modelo: ModeloPlanta): Punto3[
   return todos;
 }
 
-/** Cuadriláteros (cm) como malla de dos caras (metros, y hacia arriba), para el .glb y la página. */
+/** Cuadriláteros o triángulos (cm) como malla de dos caras (metros, y hacia arriba), para el .glb y la página. */
 export function mallaCuadros(cuadros: readonly Punto3[][]): GeometriaGLB {
   const pos: number[] = [];
   const nor: number[] = [];
@@ -118,7 +124,8 @@ export function mallaCuadros(cuadros: readonly Punto3[][]): GeometriaGLB {
         pos.push(p[0]!, p[1]!, p[2]!);
         nor.push(nx * s, ny * s, nz * s);
       }
-      if (s === 1) idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
+      if (v.length === 3) idx.push(base, s === 1 ? base + 1 : base + 2, s === 1 ? base + 2 : base + 1);
+      else if (s === 1) idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
       else idx.push(base, base + 2, base + 1, base, base + 3, base + 2);
     }
   }

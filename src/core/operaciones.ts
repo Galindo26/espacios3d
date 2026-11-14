@@ -209,6 +209,8 @@ export function agregarMueble(e: Espacio, datos: DatosMueble, plantaId?: string)
     huecoInferior: datos.huecoInferior ?? (base.huecoInferior < alto ? base.huecoInferior : 0),
     ...(datos.piezas?.length ? { piezas: datos.piezas } : {}),
     ...(datos.modelo ? { modelo: datos.modelo } : {}),
+    // Las fotos van con el mueble: un duplicado o uno de «Mis muebles» es el mismo mueble.
+    ...(datos.fotos?.length ? { fotos: [...datos.fotos] } : {}),
   };
   // De los sitios en la pared, el primero donde el análisis no da ningún error con él (los 80 primeros).
   for (const c of candidatos.slice(0, 80)) {

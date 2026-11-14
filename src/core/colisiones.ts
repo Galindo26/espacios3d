@@ -34,12 +34,15 @@ interface Colision {
 }
 
 /** Panel de barandilla: base del grosor dado a lo largo del segmento, hasta ALTO_BARANDILLA sobre lo que se pisa. */
-function panel(a: Punto, b: Punto, suelo: (p: Punto) => number): GeometriaGLB {
+function panel(a: Punto, b: Punto, za = 0, zb = 0, grueso = Infinity): GeometriaGLB {
   const l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
   const n: Punto = [(-(b[1] - a[1]) / l) * 2, ((b[0] - a[0]) / l) * 2];
   const base: Punto[] = [[a[0] - n[0], a[1] - n[1]], [b[0] - n[0], b[1] - n[1]], [b[0] + n[0], b[1] + n[1]], [a[0] + n[0], a[1] + n[1]]];
-  const h = (p: Punto): number => (suelo(p) + ALTO_BARANDILLA) * M;
-  return mallaRampa(aXZ(base), [h(a), h(b), h(b), h(a)]);
+  const [ha, hb] = [(za + ALTO_BARANDILLA) * M, (zb + ALTO_BARANDILLA) * M];
+  // Por abajo llega a la cara inferior de la escalera, no al suelo: bajo la parte alta se pasa también
+  // por los lados (con `grueso` infinito, hasta el suelo: la barandilla de un hueco).
+  const [ba, bb] = [Math.max(0, za - grueso) * M, Math.max(0, zb - grueso) * M];
+  return mallaRampa(aXZ(base), [ha, hb, hb, ha], [ba, bb, bb, ba]);
 }
 
 function colisionesPlanta(e: Espacio, p: Planta): Colision[] {
@@ -81,9 +84,6 @@ function colisionesPlanta(e: Espacio, p: Planta): Colision[] {
     }
   }
   // Escaleras: una rampa por tramo y la meseta, y los paneles de las barandillas; arriba, la barandilla del hueco.
-  const barandillas = (geo: GeometriaEscalera, malla: string, suelo: (q: Punto) => number, segs: [Punto, Punto][]): void => {
-    segs.forEach(([a, b], k) => prim(malla, `${malla}-barandilla-${k + 1}`, 'convexa', panel(a, b, suelo)));
-  };
   for (const esc of p.escaleras ?? []) {
     const geo = geometriaDe(e, p, esc);
     // Losas, no macizos desde el suelo: bajo la parte alta se pasa, como en la página (revisión independiente de
@@ -92,13 +92,13 @@ function colisionesPlanta(e: Espacio, p: Planta): Colision[] {
     rampasEscalera(geo).forEach((r, k) =>
       prim(`escalera-${esc.id}`, `escalera-${esc.id}-rampa-${k + 1}`, 'convexa', mallaRampa(aXZ(r.base), r.alturas.map((z) => Math.max(z, 0.5) * M), r.alturas.map((z) => Math.max(0, z - grueso) * M))),
     );
-    barandillas(geo, `escalera-${esc.id}`, (q) => alturaEnEscalera(geo, q) ?? 0, geo.barandillas);
+    geo.pasamanos.forEach((s, k) => prim(`escalera-${esc.id}`, `escalera-${esc.id}-barandilla-${k + 1}`, 'convexa', panel(s.a, s.b, s.za, s.zb, grueso)));
     if (geo.poste) prim(`escalera-${esc.id}`, `escalera-${esc.id}-poste`, 'convexa', mallaPrisma(aXZ(geo.poste), 0, (geo.altura + ALTO_BARANDILLA) * M));
   }
   for (const { desde, escalera } of escalerasQueLlegan(e, p.id)) {
     const geo = geometriaDe(e, desde, escalera);
     // Un panel por lado del hueco, salvo la llegada (antes, uno por cada trozo de 20 cm: revisión independiente, 4).
-    bordesSalvo(geo.hueco, [geo.llegada]).forEach(([a, b], k) => prim(`hueco-${escalera.id}`, `hueco-${escalera.id}-barandilla-${k + 1}`, 'convexa', panel(a, b, () => 0)));
+    bordesSalvo(geo.hueco, [geo.llegada]).forEach(([a, b], k) => prim(`hueco-${escalera.id}`, `hueco-${escalera.id}-barandilla-${k + 1}`, 'convexa', panel(a, b)));
   }
   return res;
 }

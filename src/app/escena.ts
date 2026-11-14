@@ -1098,6 +1098,11 @@ export class Escena {
     return (hit?.object.userData.vertice as number | undefined) ?? null;
   }
 
+  /** Geometrías y texturas vivas en la tarjeta gráfica. Para las pruebas. */
+  memoria(): { geometries: number; textures: number } {
+    return { ...this.renderer.info.memory };
+  }
+
   /** ¿Hay pared entre dos puntos de la planta (cm) a una altura (cm)? Para las pruebas; mira todas las paredes, también las ocultas por el corte. */
   hayMuroEntre(a: Punto, b: Punto, altura: number): boolean {
     this.escena.updateMatrixWorld(true);
@@ -1123,6 +1128,8 @@ export class Escena {
         return ([[0, 0], [f.anchoPx, 0], [f.anchoPx, f.altoPx], [0, f.altoPx]] as Punto[]).map(([u, v]) => [f.x + u * f.escala * c - v * f.escala * s, f.y + u * f.escala * s + v * f.escala * c] as Punto);
       });
     this.caja = this.unirCajas();
+    // La textura de cada plano es sólo suya: se libera con él (si no, cada cambio de opacidad dejaba una).
+    this.grupoFondos.traverse((o) => ((o as THREE.Mesh).material as THREE.MeshBasicMaterial | undefined)?.map?.dispose());
     liberar(this.grupoFondos);
     this.grupoFondos.clear();
     for (const { fondo: f, imagen } of lista) {
@@ -1502,7 +1509,9 @@ export class Escena {
   async exportarGLB(espacio: Espacio): Promise<ArrayBuffer> {
     const raiz = new THREE.Group();
     raiz.name = espacio.nombre;
-    const c = aTres((this.caja.minX + this.caja.maxX) / 2, (this.caja.minY + this.caja.maxY) / 2);
+    // El centro de las estancias, no el de lo que se ve: un plano de fondo no mueve el modelo.
+    const caja = this.cajaEstancias;
+    const c = aTres((caja.minX + caja.maxX) / 2, (caja.minY + caja.maxY) / 2);
     raiz.position.set(-c.X, 0, -c.Z);
     let n = 0;
     const copiaMallas = (origen: THREE.Object3D, destino: THREE.Object3D, excluir: Set<THREE.Object3D>): void => {
@@ -1548,8 +1557,24 @@ export class Escena {
     for (const s of this.suelos) {
       const copia = s.clone();
       copia.userData = { estancia: s.userData.estancia };
+      // Con su textura sea cual sea la vista (en el plano se quita) y sin el brillo de la elegida.
+      const m = s.material as THREE.MeshStandardMaterial;
+      copia.material = new THREE.MeshStandardMaterial({ color: m.color, roughness: m.roughness, map: (m.userData.textura as THREE.Texture | null | undefined) ?? null });
       estancia.add(copia);
     }
+    // Pintura de las paredes: las capas de cada muro, estén o no a la vista.
+    const pintura = new THREE.Group();
+    pintura.name = 'pintura';
+    this.grupoEstancia.updateWorldMatrix(true, true);
+    this.grupoEstancia.traverse((o) => {
+      if (!(o instanceof THREE.Mesh) || !o.name.startsWith('pintura-')) return;
+      const copia = o.clone();
+      copia.visible = true;
+      copia.matrix.copy(new THREE.Matrix4().copy(this.grupoEstancia.matrixWorld).invert().multiply(o.matrixWorld));
+      copia.matrix.decompose(copia.position, copia.quaternion, copia.scale);
+      pintura.add(copia);
+    });
+    if (pintura.children.length) estancia.add(pintura);
     const obra = this.grupoEstancia.getObjectByName('obra');
     if (obra) {
       const copia = obra.clone();

@@ -4,7 +4,7 @@
 // toca, y el movimiento se trocea para no atravesar nada aunque el paso sea largo.
 import { esquinasMueble, puntoEnPoligono } from './geometria.js';
 import { huellaElemento, rangoAltura } from './elementos.js';
-import { modeloPlanta } from './muros.js';
+import { huellaHueco, modeloPlanta } from './muros.js';
 import { geometriaHueco } from './huecos.js';
 import type { Espacio, Planta, Punto } from './tipos.js';
 import { bordesSalvo, enConvexos, enHuella, escalerasQueLlegan, geometriaDe, alturaEnEscalera, parteBaja, type GeometriaEscalera } from './escaleras.js';
@@ -49,13 +49,15 @@ export function obstaculos(p: Planta): Segmento[] {
   const anillo = (r: readonly Punto[]): void => {
     for (let i = 0; i < r.length; i++) segs.push([r[i] as Punto, r[(i + 1) % r.length] as Punto]);
   };
-  // Muros: la banda que empieza en el suelo ya tiene restados puertas y pasos (y no las ventanas).
+  // Muros: la banda que empieza en el suelo ya tiene restados puertas y pasos, y también las ventanas
+  // que llegan al suelo (antepecho 0). Por una ventana no se pasa: su hueco se cierra aquí.
   const m = modeloPlanta(p);
   const suelo = m.bandas.find((b) => b.y0 === 0);
   for (const pol of suelo?.poligonos ?? []) {
     anillo(pol.exterior);
     for (const h of pol.agujeros) anillo(h);
   }
+  if (suelo) for (const x of m.huecos) if (x.hueco.tipo === 'ventana' && x.base <= 0 && x.profundidad > 0) anillo(huellaHueco(x));
   // Sin grosor de muro no hay masa: se choca con el contorno de cada estancia, menos sus puertas y pasos.
   if (!m.masa.length) {
     // Tramos de puertas y pasos en planta: se restan de cualquier pared en su misma recta (también la

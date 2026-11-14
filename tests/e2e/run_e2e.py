@@ -797,6 +797,17 @@ def main() -> int:
         p4.keyboard.press("Control+z")
         p4.wait_for_function("(window.__ESPACIOS3D__.espacio().plantas[0].fondos || [])[0]?.archivo === 'planos/plano-sintetico.png'", timeout=5000)
         comprobar(not p4.locator("#modo-ayuda").inner_text().startswith("Calibrar"), "deshacer el plano nuevo sale del modo calibrar")
+        # Ronda 6: cambiar la opacidad no deja texturas del plano sin liberar.
+        def opacidad(v: str) -> None:
+            p4.evaluate("v => { const i = document.querySelector('#f-opacidad'); i.value = v; i.dispatchEvent(new Event('change', { bubbles: true })); }", v)
+            p4.wait_for_function("v => (window.__ESPACIOS3D__.espacio().plantas[0].fondos || [])[0]?.opacidad === Number(v)", arg=v, timeout=5000)
+            p4.wait_for_timeout(250)
+        opacidad("0.3")
+        texturas = p4.evaluate("window.__ESPACIOS3D__.memoria().textures")
+        for v in ("0.4", "0.5", "0.6", "0.7"):
+            opacidad(v)
+        despues = p4.evaluate("window.__ESPACIOS3D__.memoria().textures")
+        comprobar(despues <= texturas, f"cambiar la opacidad del plano no acumula texturas ({texturas} → {despues})")
         # P3 y P4: dibujar a pulso (esquinas algo torcidas) y cerrar con un doble clic que se mueve 2 px.
         p4.click("#b-dibujar")
         for xc, yc in ((50, 270), (150, 272), (152, 320)):
@@ -852,13 +863,34 @@ def main() -> int:
         p4.wait_for_timeout(300)
         p4.screenshot(path=str(SALIDA / "15_obra_3d.png"))
         p4.click("#v-plano")
+        # Ronda 6: con paredes pintadas, suelo con textura y el plano de fondo lejos de la casa.
+        p4.wait_for_function("JSON.stringify(JSON.parse(window.__disco.archivos['mi-casa.espacio.json'].texto).plantas) === JSON.stringify(window.__ESPACIOS3D__.espacio().plantas)", timeout=8000)
+        pintada = espacio(p4)
+        est = next(s for s in pintada["plantas"][0]["estancias"] if s["id"] == calcada)
+        est["paredes"] = "#c8d6e5"
+        est["suelo"] = {"tipo": "parquet"}
+        pintada["plantas"][0]["fondos"][0]["x"] -= 3000
+        agente(p4, pintada, "mi-casa.espacio.json")
+        p4.wait_for_function("id => window.__ESPACIOS3D__.espacio().plantas[0].estancias.find(s => s.id === id).paredes === '#c8d6e5'", arg=calcada, timeout=5000)
+        p4.wait_for_function("window.__ESPACIOS3D__.fondos()[0]?.estado === 'imagen'", timeout=8000)
+        p4.wait_for_timeout(300)
         with p4.expect_download() as descarga:
             p4.click("#x-glb")
         ruta = copia.parent / "obra.glb"
         descarga.value.save_as(ruta)
         glb = ruta.read_bytes()
         largo_json = int.from_bytes(glb[12:16], "little")
-        nombres = {n.get("name") for n in json.loads(glb[20:20 + largo_json]).get("nodes", [])}
+        gltf = json.loads(glb[20:20 + largo_json])
+        nombres = {n.get("name") for n in gltf.get("nodes", [])}
+        comprobar(any((n or "").startswith(f"pintura-{calcada}-") for n in nombres), "el .glb de la página lleva la pintura de las paredes")
+        suelo_nodo = next(n for n in gltf["nodes"] if n.get("name") == f"suelo-{calcada}")
+        mat = gltf["materials"][gltf["meshes"][suelo_nodo["mesh"]]["primitives"][0]["material"]]
+        comprobar("baseColorTexture" in mat.get("pbrMetallicRoughness", {}), "y la textura del suelo aunque se exporte desde el plano")
+        xs = [q[0] for s in pintada["plantas"][0]["estancias"] for q in s["contorno"]]
+        ys = [q[1] for s in pintada["plantas"][0]["estancias"] for q in s["contorno"]]
+        raiz_glb = next(n for n in gltf["nodes"] if n.get("name") == pintada["nombre"])
+        tr = raiz_glb.get("translation", [0, 0, 0])
+        comprobar(abs(tr[0] + (min(xs) + max(xs)) / 200) < 0.02 and abs(tr[2] + (min(ys) + max(ys)) / 200) < 0.02, f"y su origen es el centro de las estancias, no el del plano de fondo ({tr})")
         comprobar("obra" in nombres and any((n or "").startswith("obra-") for n in nombres), "el .glb de la página lleva la obra")
         comprobar(not any((n or "").startswith("techo-") for n in nombres), "y no lleva el techo inclinado (ayuda visual), sea cual sea la vista")
         p4.click('button[data-obra="viga"]')
@@ -1246,9 +1278,16 @@ def main() -> int:
         p4.wait_for_function("window.__ESPACIOS3D__.espacio().nombre === 'Con escalera'", timeout=5000)
         p4.click("#v-plano")
         p4.click('button[data-obra="escalera"]')
+        # Ronda 6: un agente escribe con el diálogo abierto; al aceptar no se pisa su cambio.
+        p4.wait_for_selector("#dialogo[open]")
+        con_silla = json.loads(json.dumps(casa3))
+        con_silla["plantas"][0]["muebles"] = [{"id": "silla-del-agente", "nombre": "Silla", "tipo": "silla", "ancho": 45, "fondo": 45, "alto": 90, "x": 80, "y": 80, "giro": 0}]
+        agente(p4, con_silla, "escalera.espacio.json")
+        p4.wait_for_function("window.__ESPACIOS3D__.espacio().plantas[0].muebles.some(m => m.id === 'silla-del-agente')", timeout=5000)
         texto = aceptar_dialogo(p4)
         p4.wait_for_function("window.__ESPACIOS3D__.espacio().plantas.length === 2 && (window.__ESPACIOS3D__.espacio().plantas[0].escaleras || []).length === 1", timeout=3000)
         e3 = espacio(p4)
+        comprobar(any(m["id"] == "silla-del-agente" for m in e3["plantas"][0]["muebles"]), "«Escalera» no pisa lo que un agente escribió con su diálogo abierto")
         esc = e3["plantas"][0]["escaleras"][0]
         comprobar("No hay planta encima" in texto and esc["hasta"] == e3["plantas"][1]["id"] and esc["forma"] == "recta",
                   f"«Escalera» sin planta encima ofrece crearla y pone una escalera recta que sube a ella ({esc['largo']} cm, giro {esc['giro']})")
@@ -1865,9 +1904,13 @@ def main() -> int:
         )
         p.click("#b-abierto-carpeta")
         p.wait_for_function("!document.querySelector('#abierto') || document.querySelector('#abierto').hidden", timeout=5000)
-        retocar(p, "Repintada")  # el siguiente repintado pide el fondo con la clave nueva (archivo vinculado)
-        p.wait_for_function("window.__ESPACIOS3D__.fondos().length === 1 && window.__ESPACIOS3D__.fondos()[0].estado === 'imagen'", timeout=8000)
-        comprobar(True, "tras unirse a la carpeta, el plano de fondo se lee de la carpeta")
+        # Sin tocar nada más: al unirse se vuelve a pedir el fondo con la clave nueva (archivo vinculado).
+        try:
+            p.wait_for_function("window.__ESPACIOS3D__.fondos().length === 1 && window.__ESPACIOS3D__.fondos()[0].estado === 'imagen'", timeout=8000)
+            unido = True
+        except Exception:
+            unido = False
+        comprobar(unido, "tras unirse a la carpeta, el plano de fondo se lee de la carpeta sin esperar a otro cambio")
 
         for c in contextos_r5:
             c.close()

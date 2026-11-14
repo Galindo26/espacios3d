@@ -2,9 +2,9 @@
 // Metros, y hacia arriba; la planta (x, y) va a (X, Z). Un nodo por planta, con sus suelos, sus muros
 // derivados (muros.ts) y un nodo por mueble con su id, su posición y su giro (TRS) y sus piezas.
 import { escribirGLB, mallaBarra, mallaCaja, mallaCilindro, mallaCuna, mallaEsfera, mallaPrisma, mallaPrismaConAgujeros, type MaterialGLB, type NodoGLB, type PrimitivaGLB } from './glb.js';
-import { normalInterior, rotacionY } from './geometria.js';
+import { contornoExterior, normalInterior, rotacionY } from './geometria.js';
 import { huellaElemento, puntoEnElMuro, rangoAltura } from './elementos.js';
-import { huellaHueco, modeloPlanta } from './muros.js';
+import { huellaHueco, masaDeMuros, modeloPlanta } from './muros.js';
 import { nodosColision, type ModoColisiones } from './colisiones.js';
 import { piezasDe } from './formas.js';
 import { diferencia, union, type PoligonoConAgujeros } from './booleanas.js';
@@ -53,8 +53,8 @@ export function forjadoDePlanta(e: Espacio, p: Planta): { poligonos: PoligonoCon
   if (!debajo) return null;
   const canto = p.nivel - debajo.nivel - Math.max(0, ...debajo.estancias.map((s) => s.altura));
   if (canto <= 2 + 1e-6) return null;
-  const m = modeloPlanta(p);
-  const base = union([...m.suelo, ...m.masa].map((x) => x.exterior));
+  // La huella con sus muros, conservando los agujeros: un patio interior no lleva forjado.
+  const base = p.grosorExterior > 0 ? union(p.estancias.map((s) => contornoExterior(s.contorno, p.grosorExterior))) : masaDeMuros(p).suelo;
   const huecos = huecosDePlanta(e, p.id).filter((h) => h.length >= 3);
   const poligonos = huecos.length ? diferencia(base, huecos.map((h) => ({ exterior: h, agujeros: [] }))) : base;
   return { poligonos, z0: -canto, z1: -2 };

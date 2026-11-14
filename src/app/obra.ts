@@ -125,14 +125,19 @@ export class PanelObra {
       const ok = await this.a.confirmar('No hay planta encima', `La escalera sube a la planta de encima de «${pl.nombre}», que todavía no existe. ¿Añadirla con la misma huella (estancias y ventanas, sin muebles)?`, 'Añadir planta y escalera');
       if (!ok) return;
       try {
-        e = agregarPlanta(e, { copiarDe: pl.id, conVentanas: true }).espacio;
+        // Lo que se aceptó fue añadir la planta: se añade a lo que hay ahora, que puede haber cambiado
+        // mientras el diálogo estaba abierto (un agente), y no a lo de antes.
+        e = this.a.esp();
+        const ahora = e.plantas.find((x) => x.id === pl.id);
+        if (!ahora) return this.a.aviso('La planta cambió mientras decidías: vuelve a intentarlo.');
+        if (!plantaDeEncima(e, ahora)) e = agregarPlanta(e, { copiarDe: pl.id, conVentanas: true }).espacio;
       } catch (err) {
         return this.a.aviso((err as Error).message);
       }
     }
     const s = this.est();
     const c = cajaContorno(s.contorno);
-    const arriba = plantaDeEncima(e, pl)!;
+    const arriba = plantaDeEncima(e, e.plantas.find((x) => x.id === pl.id)!)!;
     const n = peldanosPorDefecto(arriba.nivel - pl.nivel);
     const ancho = c.maxX - c.minX;
     const largo = c.maxY - c.minY;

@@ -129,7 +129,12 @@ Crear y cambiar (cada cambio escribe el archivo y muestra las incidencias que re
   aplicar <archivo> --ops ops.json  lote atómico (todo o nada); --ops - lo lee de la entrada estándar
           [{"op":"agregar","tipo":"silla","x":100,"y":80}, {"op":"mover","id":"cama","muro":1,"desde":20}]
           op = agregar, mover, girar, editar, quitar, pegar-pared, hueco-agregar, hueco-quitar,
-          distribucion-guardar, distribucion-aplicar, distribucion-quitar, estancia, renombrar;
+          distribucion-guardar, distribucion-aplicar, distribucion-quitar, estancia, renombrar,
+          estancia-agregar, estancia-quitar, estancia-contorno, fondo-poner, fondo-calibrar,
+          fondo-editar, fondo-quitar, elemento-agregar, elemento-editar, elemento-quitar,
+          faldon-poner, faldon-quitar, planta-agregar, planta-editar, planta-quitar, tabique-mover,
+          escalera-agregar, escalera-editar, escalera-quitar, foto-agregar, foto-quitar;
+          cada una con las opciones de su comando (el de «escalera agregar» para escalera-agregar…),
           claves en camelCase (holguraFrente, huecoInferior, grosorMuros)
 
 Varias estancias o plantas
@@ -422,7 +427,7 @@ function escribir(ruta: string, texto: string, original: Buffer | null): void {
         }
         throw new ErrorSalida(`No se puede leer «${ruta}» para comprobarlo: ${(e as Error).message}`, SALIDA.USO);
       }
-      if (original === null ? ahora !== null && intento > 0 : !ahora || !ahora.equals(original)) throw conflicto(ruta);
+      if (original === null ? ahora !== null : !ahora || !ahora.equals(original)) throw conflicto(ruta);
       try {
         renameSync(tmp, ruta);
         return;
@@ -1114,8 +1119,8 @@ async function servirEspaciosMCP(argv: string[]): Promise<void> {
       },
       {
         nombre: 'aplicar',
-        descripcion: 'Aplica una lista de operaciones (las de «node espacios3d.mjs aplicar»: agregar, mover, girar, editar, quitar, estancia-agregar, hueco-agregar, elemento-agregar, planta-agregar, escalera-agregar, tabique-mover, fondo-poner…), todas o ninguna, y devuelve las notas y las incidencias. Con simular: true no escribe. En «agregar», «mio» usa uno de «Mis muebles». En «fondo-poner» basta «archivo» (la imagen, relativa al .espacio.json): el tamaño se lee de ella.',
-        esquemaEntrada: { type: 'object', properties: { archivo, ops: { type: 'array', items: { type: 'object' } }, simular: { type: 'boolean' } }, required: ['archivo', 'ops'], additionalProperties: false },
+        descripcion: 'Aplica una lista de operaciones (las de «node espacios3d.mjs aplicar»: agregar, mover, girar, editar, quitar, estancia-agregar, hueco-agregar, elemento-agregar, planta-agregar, escalera-agregar, tabique-mover, fondo-poner…), todas o ninguna, y devuelve las notas y las incidencias. Con simular: true no escribe; con exigirSinErrores: true no escribe si el resultado tiene incidencias de error. En «agregar», «mio» usa uno de «Mis muebles». En «fondo-poner» basta «archivo» (la imagen, relativa al .espacio.json): el tamaño se lee de ella.',
+        esquemaEntrada: { type: 'object', properties: { archivo, ops: { type: 'array', items: { type: 'object' } }, simular: { type: 'boolean' }, exigirSinErrores: { type: 'boolean' } }, required: ['archivo', 'ops'], additionalProperties: false },
         async ejecutar(a) {
           const ruta = rutaEnCarpeta(carpeta, a.archivo);
           if (!Array.isArray(a.ops)) throw new Error('«ops» debe ser una lista de operaciones');
@@ -1129,7 +1134,7 @@ async function servirEspaciosMCP(argv: string[]): Promise<void> {
           });
           let r: ResultadoMutacion;
           try {
-            r = mutarArchivo(ruta, { simular: a.simular === true }, (e) => {
+            r = mutarArchivo(ruta, { simular: a.simular === true, exigirSinErrores: a.exigirSinErrores === true }, (e) => {
               const x = N.ejecutarLote(e, ops);
               return { ...x, notas: [...x.notas, ...avisosModelos(x.espacio, ruta), ...avisosFotos(x.espacio, ruta)] };
             });
@@ -1191,7 +1196,8 @@ async function servirEspaciosMCP(argv: string[]): Promise<void> {
           if (a.guardarEn !== undefined) {
             // La misma comprobación que los .espacio.json: enlaces resueltos y nada fuera (revisión independiente, 5).
             const destino = rutaEnCarpeta(carpeta, a.guardarEn, false, { re: /\.png$/i, nombre: '.png' });
-            const fondo = pl.fondos?.find((x) => join(dirname(ruta), ...x.archivo.split('/')).toLowerCase() === destino.toLowerCase());
+            // El de cualquier planta, no sólo la dibujada (como «plano --png» del CLI).
+            const fondo = espacio.plantas.flatMap((x) => x.fondos ?? []).find((x) => join(dirname(ruta), ...x.archivo.split('/')).toLowerCase() === destino.toLowerCase());
             if (fondo) throw new Error(`«guardarEn» no puede ser la imagen del fondo «${fondo.id}»`);
             writeFileSync(destino, png);
             guardado = ` Guardado en ${a.guardarEn}.`;

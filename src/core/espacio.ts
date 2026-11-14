@@ -44,7 +44,7 @@ export function todosLosMuebles(e: Espacio): Mueble[] {
   return e.plantas.flatMap((p) => p.muebles);
 }
 
-/** Todos los ids del archivo (plantas, estancias, huecos y muebles): son únicos. */
+/** Todos los ids del archivo (plantas, estancias, huecos, elementos, muebles, fondos y escaleras): son únicos. */
 export function idsUsados(e: Espacio): Set<string> {
   const s = new Set<string>();
   for (const p of e.plantas) {
@@ -56,6 +56,7 @@ export function idsUsados(e: Espacio): Set<string> {
     }
     for (const m of p.muebles) s.add(m.id);
     for (const f of p.fondos ?? []) s.add(f.id);
+    for (const esc of p.escaleras ?? []) s.add(esc.id);
   }
   return s;
 }

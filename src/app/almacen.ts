@@ -73,6 +73,8 @@ interface ManejadorCarpeta {
   getFileHandle(nombre: string, o?: { create?: boolean }): Promise<ManejadorArchivo>;
   getDirectoryHandle(nombre: string, o?: { create?: boolean }): Promise<ManejadorCarpeta>;
   values(): AsyncIterable<ManejadorArchivo | ManejadorCarpeta>;
+  /** Ruta de un archivo dentro de esta carpeta, por partes, o null si está fuera. */
+  resolve?(h: ManejadorArchivo): Promise<string[] | null>;
   queryPermission?(o: { mode: 'readwrite' }): Promise<PermissionState>;
   requestPermission?(o: { mode: 'readwrite' }): Promise<PermissionState>;
 }
@@ -131,6 +133,12 @@ async function bdLeer<T>(clave: string): Promise<T | undefined> {
   } catch {
     return undefined;
   }
+}
+
+async function escribirEn(h: ManejadorArchivo, texto: string): Promise<void> {
+  const w = await h.createWritable();
+  await w.write(texto);
+  await w.close();
 }
 
 function esCancelacion(e: unknown): boolean {
@@ -271,16 +279,28 @@ class AlmacenDisco implements Almacen {
   }
   async guardar(texto: string): Promise<void> {
     if (!this.manejador) throw new Error('No hay archivo vinculado');
-    const w = await this.manejador.createWritable();
-    await w.write(texto);
-    await w.close();
+    await escribirEn(this.manejador, texto);
   }
   async guardarComo(texto: string, sugerido: string): Promise<boolean> {
     try {
       const h = await (window as unknown as VentanaFSA).showSaveFilePicker({ types: TIPOS, suggestedName: sugerido });
+      // Primero se escribe: si falla, sigue vinculado el archivo de antes y no se lee el nuevo como
+      // si fuera un cambio hecho fuera.
+      await escribirEn(h, texto);
+      // La carpeta de trabajo sigue al archivo: si el nuevo está dentro, con su ruta; si está fuera,
+      // deja de haberla (sus planos, fotos y modelos no están junto a él).
+      let ruta: string | null = null;
+      try {
+        ruta = this.dir ? ((await this.dir.resolve?.(h))?.join('/') ?? null) : null;
+      } catch {
+        ruta = null;
+      }
+      this.gen = ++vinculaciones;
       this.manejador = h;
-      await this.guardar(texto);
+      this.rutaEnCarpeta = ruta;
+      if (!ruta) this.dir = null;
       await bdPoner('ultimo', h);
+      await bdPoner('carpeta', ruta && this.dir ? { dir: this.dir, ruta } : null);
       return true;
     } catch (e) {
       if (esCancelacion(e)) return false;
